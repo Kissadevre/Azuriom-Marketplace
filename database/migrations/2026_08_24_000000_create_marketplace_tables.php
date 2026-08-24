@@ -79,10 +79,24 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['resource_id', 'version']);
         });
+
+        Schema::create('marketplace_reports', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('reportable_type', 50);
+            $table->unsignedBigInteger('reportable_id');
+            $table->string('subject');
+            $table->text('excerpt')->nullable();
+            $table->text('reason');
+            $table->timestamps();
+            $table->index(['reportable_type', 'reportable_id']);
+            $table->unique(['user_id', 'reportable_type', 'reportable_id']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('marketplace_reports');
         Schema::dropIfExists('marketplace_resource_updates');
         Schema::dropIfExists('marketplace_ratings');
         Schema::dropIfExists('marketplace_comments');

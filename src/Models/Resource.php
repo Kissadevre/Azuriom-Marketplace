@@ -34,6 +34,7 @@ class Resource extends Model
     public function purchases() { return $this->hasMany(Purchase::class); }
     public function updates() { return $this->hasMany(ResourceUpdate::class)->latest(); }
     public function latestUpdate() { return $this->hasOne(ResourceUpdate::class)->latestOfMany(); }
+    public function reports() { return $this->morphMany(Report::class, 'reportable'); }
     public function scopePublished(Builder $query): void { $query->where('status', 'published'); }
     public function isOwnedBy(?User $user): bool { return $user !== null && $this->user_id === $user->id; }
     public function isPaused(): bool { return $this->paused_at !== null; }

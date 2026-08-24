@@ -4,6 +4,7 @@ namespace Azuriom\Plugin\Marketplace\Providers;
 
 use Azuriom\Extensions\Plugin\BasePluginServiceProvider;
 use Azuriom\Models\Permission;
+use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -30,7 +31,10 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
             'marketplace.download-paid' => 'marketplace::admin.permissions.download_paid',
         ]);
 
-        Relation::morphMap(['marketplace.resources' => Resource::class]);
+        Relation::morphMap([
+            'marketplace.resources' => Resource::class,
+            'marketplace.comments' => Comment::class,
+        ]);
     }
 
     protected function routeDescriptions(): array
@@ -49,6 +53,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
                 'route' => 'marketplace.admin.*',
                 'items' => [
                     'marketplace.admin.categories.index' => trans('marketplace::admin.categories.title'),
+                    'marketplace.admin.reports.index' => trans('marketplace::admin.reports.title'),
                     'marketplace.admin.settings.edit' => trans('marketplace::admin.settings.title'),
                 ],
             ],

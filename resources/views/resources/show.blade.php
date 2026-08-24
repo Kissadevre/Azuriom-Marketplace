@@ -30,6 +30,11 @@
 
                 @auth
                     <div class="d-flex gap-2 align-self-start">
+                        @if(! $resource->isOwnedBy(auth()->user()))
+                            <button class="btn btn-outline-danger marketplace-report-action" type="button" data-report-url="{{ route('marketplace.resources.report', $resource) }}" data-report-subject="@lang('marketplace::messages.reports.resource_subject', ['resource' => $resource->name])" title="@lang('marketplace::messages.reports.action')">
+                                <i class="bi bi-flag" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.reports.action')</span>
+                            </button>
+                        @endif
                         @if($resource->isOwnedBy(auth()->user()) || auth()->user()->can('marketplace.edit'))
                             <a href="{{ route('marketplace.resources.edit', $resource) }}" class="btn btn-outline-secondary">@lang('messages.actions.edit')</a>
                         @endif
@@ -91,12 +96,12 @@
                     @forelse($resource->comments as $comment)
                         <div class="card mb-2"><div class="card-body"><div class="d-flex justify-content-between gap-2"><div><strong>{{ $comment->user->name }}</strong><small class="text-muted ms-2">{{ format_date($comment->created_at, true) }}</small></div>
                             @auth
-                                @if($comment->user_id === auth()->id() || auth()->user()->can('marketplace.delete-comments'))
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="@lang('marketplace::messages.comment_actions')">
-                                            <i class="bi bi-three-dots-vertical" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.comment_actions')</span>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="@lang('marketplace::messages.comment_actions')">
+                                        <i class="bi bi-three-dots-vertical" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.comment_actions')</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        @if($comment->user_id === auth()->id() || auth()->user()->can('marketplace.delete-comments'))
                                             <form method="POST" action="{{ route('marketplace.comments.destroy', $comment) }}">
                                                 @csrf @method('DELETE')
                                                 <button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.delete_comment')"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_comment')</button>
@@ -107,9 +112,12 @@
                                                     <button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.delete_user_comments', ['user' => $comment->user->name])"><i class="bi bi-person-x me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_user_comments')</button>
                                                 </form>
                                             @endif
-                                        </div>
+                                        @endif
+                                        @if($comment->user_id !== auth()->id())
+                                            <button class="dropdown-item text-danger marketplace-report-action" type="button" data-report-url="{{ route('marketplace.comments.report', $comment) }}" data-report-subject="@lang('marketplace::messages.reports.comment_subject', ['user' => $comment->user->name])"><i class="bi bi-flag me-2" aria-hidden="true"></i>@lang('marketplace::messages.reports.action')</button>
+                                        @endif
                                     </div>
-                                @endif
+                                </div>
                             @endauth
                         </div><p class="mb-0 mt-2">{{ $comment->content }}</p></div></div>
                     @empty
@@ -189,6 +197,28 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="marketplaceReportModal" tabindex="-1" aria-labelledby="marketplaceReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" id="marketplaceReportForm" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="marketplaceReportModalLabel">@lang('marketplace::messages.reports.title')</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@lang('marketplace::messages.confirm.cancel')"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">@lang('marketplace::messages.reports.message')</p>
+                    <div class="alert alert-light border" id="marketplaceReportSubject"></div>
+                    <label class="form-label" for="marketplaceReportReason">@lang('marketplace::messages.reports.reason')</label>
+                    <textarea id="marketplaceReportReason" name="reason" class="form-control" rows="5" minlength="5" maxlength="2000" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('marketplace::messages.confirm.cancel')</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-flag me-1" aria-hidden="true"></i>@lang('marketplace::messages.reports.submit')</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endauth
 @endsection
 
@@ -244,6 +274,23 @@
             actionForm = null;
             submit.disabled = false;
         });
+
+        const reportModalElement = document.getElementById('marketplaceReportModal');
+        const reportModal = new bootstrap.Modal(reportModalElement);
+        const reportForm = document.getElementById('marketplaceReportForm');
+        const reportSubject = document.getElementById('marketplaceReportSubject');
+        const reportReason = document.getElementById('marketplaceReportReason');
+
+        document.querySelectorAll('.marketplace-report-action').forEach((button) => {
+            button.addEventListener('click', () => {
+                reportForm.action = button.dataset.reportUrl;
+                reportSubject.textContent = button.dataset.reportSubject;
+                reportReason.value = '';
+                reportModal.show();
+            });
+        });
+
+        reportModalElement.addEventListener('shown.bs.modal', () => reportReason.focus());
     });
 </script>
 @endpush

@@ -4,6 +4,7 @@ use Azuriom\Plugin\Marketplace\Controllers\CommentController;
 use Azuriom\Plugin\Marketplace\Controllers\HomeController;
 use Azuriom\Plugin\Marketplace\Controllers\ModerationController;
 use Azuriom\Plugin\Marketplace\Controllers\RatingController;
+use Azuriom\Plugin\Marketplace\Controllers\ReportController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceUpdateController;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/resource/{resource:uuid}/download', [ResourceController::class, 'download'])->name('resources.download');
     Route::post('/resource/{resource:uuid}/external', [ResourceController::class, 'continueExternal'])->name('resources.external');
     Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/resource/{resource:uuid}/report', [ReportController::class, 'resource'])->name('resources.report');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/comments/{comment}/report', [ReportController::class, 'comment'])->name('comments.report');
     Route::post('/resource/{resource:uuid}/rating', [RatingController::class, 'store'])->name('ratings.store');
     Route::post('/resource/{resource:uuid}/updates', [ResourceUpdateController::class, 'store'])->name('resources.updates.store');
 

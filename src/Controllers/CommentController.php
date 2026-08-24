@@ -14,6 +14,7 @@ class CommentController extends Controller
     {
         abort_unless(
             $resource->status === 'published'
+            && ! $resource->isPaused()
             && $resource->category->canAccess($request->user())
             && $resource->isUnlockedBy($request->user()),
             403
@@ -39,7 +40,7 @@ class CommentController extends Controller
     {
         abort_unless(
             $comment->user_id === $request->user()->id
-            || $request->user()->can('marketplace.admin'),
+            || $request->user()->can('marketplace.delete-comments'),
             403
         );
 

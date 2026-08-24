@@ -11,8 +11,15 @@ class Resource extends Model
 {
     use HasTablePrefix;
     protected string $prefix = 'marketplace_';
-    protected $fillable = ['category_id', 'user_id', 'name', 'slug', 'version', 'summary', 'description', 'delivery_type', 'file_path', 'external_url', 'price', 'status', 'moderation_note', 'published_at'];
-    protected $casts = ['price' => 'float', 'published_at' => 'datetime'];
+    protected $fillable = ['category_id', 'user_id', 'name', 'slug', 'version', 'summary', 'description', 'delivery_type', 'file_path', 'external_url', 'price', 'status', 'moderation_note', 'published_at', 'paused_at', 'archived_at'];
+    protected $casts = ['price' => 'float', 'published_at' => 'datetime', 'paused_at' => 'datetime', 'archived_at' => 'datetime'];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('notArchived', fn (Builder $query) => $query->whereNull(
+            $query->getModel()->qualifyColumn('archived_at')
+        ));
+    }
 
     public function getRouteKeyName(): string { return 'slug'; }
     public function category() { return $this->belongsTo(Category::class); }
@@ -22,6 +29,7 @@ class Resource extends Model
     public function purchases() { return $this->hasMany(Purchase::class); }
     public function scopePublished(Builder $query): void { $query->where('status', 'published'); }
     public function isOwnedBy(?User $user): bool { return $user !== null && $this->user_id === $user->id; }
+    public function isPaused(): bool { return $this->paused_at !== null; }
     public function isUnlockedBy(?User $user): bool
     {
         return $this->price <= 0 || $this->isOwnedBy($user) || ($user !== null && $this->purchases()->where('user_id', $user->id)->exists());

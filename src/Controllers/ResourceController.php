@@ -18,7 +18,12 @@ class ResourceController extends Controller
 {
     public function show(Request $request, Resource $resource)
     {
-        abort_unless(($resource->status === 'published' && $resource->category->canAccess($request->user())) || $resource->isOwnedBy($request->user()) || $request->user()?->can('marketplace.admin'), 403);
+        abort_unless(
+            ($resource->status === 'published' && $resource->category->canAccess($request->user()))
+            || $resource->isOwnedBy($request->user())
+            || $this->hasResourceToolPermission($request),
+            403
+        );
         $resource->load(['author', 'category', 'comments.user', 'ratings']);
         return view('marketplace::resources.show', compact('resource'));
     }
@@ -42,15 +47,19 @@ class ResourceController extends Controller
 
     public function edit(Request $request, Resource $resource)
     {
-        abort_unless($resource->isOwnedBy($request->user()), 403);
+        abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         return view('marketplace::resources.edit', ['resource' => $resource, 'categories' => $this->categories($request)]);
     }
 
     public function update(ResourceRequest $request, Resource $resource)
     {
-        abort_unless($resource->isOwnedBy($request->user()), 403);
+        abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         $data = $this->payload($request, $resource);
-        abort_unless(Category::findOrFail($data['category_id'])->canAccess($request->user()), 403);
+        abort_unless(
+            $request->user()->can('marketplace.edit')
+            || Category::findOrFail($data['category_id'])->canAccess($request->user()),
+            403
+        );
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published'
             ? ($resource->published_at ?? now())
@@ -61,7 +70,7 @@ class ResourceController extends Controller
 
     public function destroy(Request $request, Resource $resource)
     {
-        abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.admin'), 403);
+        abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.delete'), 403);
         if ($resource->file_path) Storage::disk('local')->delete($resource->file_path);
         $resource->delete();
         return to_route('marketplace.index')->with('success', trans('messages.status.success'));
@@ -69,7 +78,7 @@ class ResourceController extends Controller
 
     public function purchase(Request $request, Resource $resource)
     {
-        abort_unless($resource->status === 'published' && $resource->category->canAccess($request->user()), 403);
+        abort_unless($resource->status === 'published' && ! $resource->isPaused() && $resource->category->canAccess($request->user()), 403);
         if ($resource->isUnlockedBy($request->user())) return back()->with('success', trans('marketplace::messages.already_unlocked'));
         DB::transaction(function () use ($request, $resource) {
             $users = User::query()->whereIn('id', [$request->user()->id, $resource->user_id])
@@ -88,7 +97,7 @@ class ResourceController extends Controller
 
     public function download(Request $request, Resource $resource)
     {
-        abort_unless($resource->status === 'published' && $resource->category->canAccess($request->user()) && $resource->isUnlockedBy($request->user()), 403);
+        abort_unless($this->canDownload($request, $resource), 403);
 
         if ($resource->delivery_type === 'external') {
             $destination = $this->externalDestination($resource);
@@ -108,9 +117,7 @@ class ResourceController extends Controller
     public function continueExternal(Request $request, Resource $resource)
     {
         abort_unless(
-            $resource->status === 'published'
-            && $resource->category->canAccess($request->user())
-            && $resource->isUnlockedBy($request->user()),
+            $this->canDownload($request, $resource),
             403
         );
 
@@ -120,7 +127,14 @@ class ResourceController extends Controller
         return redirect()->away($destination['url']);
     }
 
-    private function categories(Request $request) { return Category::enabled()->orderBy('position')->get()->filter->canAccess($request->user()); }
+    private function categories(Request $request)
+    {
+        $categories = Category::enabled()->orderBy('position')->get();
+
+        return $request->user()->can('marketplace.edit')
+            ? $categories
+            : $categories->filter->canAccess($request->user());
+    }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
         $data = $request->safe()->except('file');
@@ -143,6 +157,32 @@ class ResourceController extends Controller
     {
         return (bool) setting('marketplace.moderation', true)
             && ! $request->user()->can('marketplace.bypass-moderation');
+    }
+
+    private function canDownload(Request $request, Resource $resource): bool
+    {
+        return $resource->status === 'published'
+            && ! $resource->isPaused()
+            && $resource->category->canAccess($request->user())
+            && ($resource->isUnlockedBy($request->user())
+                || $request->user()->can('marketplace.download-paid'));
+    }
+
+    private function hasResourceToolPermission(Request $request): bool
+    {
+        if ($request->user() === null) {
+            return false;
+        }
+
+        return collect([
+            'marketplace.moderate',
+            'marketplace.archive',
+            'marketplace.pause',
+            'marketplace.edit',
+            'marketplace.delete',
+            'marketplace.delete-comments',
+            'marketplace.reset-ratings',
+        ])->contains(fn (string $permission) => $request->user()->can($permission));
     }
 
     /**

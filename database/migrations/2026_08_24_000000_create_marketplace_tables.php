@@ -37,6 +37,8 @@ return new class extends Migration
             $table->text('moderation_note')->nullable();
             $table->unsignedBigInteger('downloads')->default(0);
             $table->timestamp('published_at')->nullable();
+            $table->timestamp('paused_at')->nullable()->index();
+            $table->timestamp('archived_at')->nullable()->index();
             $table->timestamps();
             $table->index(['status', 'published_at']);
         });

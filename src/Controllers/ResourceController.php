@@ -86,10 +86,35 @@ class ResourceController extends Controller
     public function download(Request $request, Resource $resource)
     {
         abort_unless($resource->status === 'published' && $resource->category->canAccess($request->user()) && $resource->isUnlockedBy($request->user()), 403);
+
+        if ($resource->delivery_type === 'external') {
+            $destination = $this->externalDestination($resource);
+
+            return view('marketplace::resources.external', [
+                'resource' => $resource,
+                'destinationHost' => $destination['host'],
+            ]);
+        }
+
         $resource->increment('downloads');
-        if ($resource->delivery_type === 'external') return redirect()->away($resource->external_url);
         abort_unless($resource->file_path && Storage::disk('local')->exists($resource->file_path), 404);
+
         return Storage::disk('local')->download($resource->file_path, basename($resource->file_path));
+    }
+
+    public function continueExternal(Request $request, Resource $resource)
+    {
+        abort_unless(
+            $resource->status === 'published'
+            && $resource->category->canAccess($request->user())
+            && $resource->isUnlockedBy($request->user()),
+            403
+        );
+
+        $destination = $this->externalDestination($resource);
+        $resource->increment('downloads');
+
+        return redirect()->away($destination['url']);
     }
 
     private function categories(Request $request) { return Category::enabled()->orderBy('position')->get()->filter->canAccess($request->user()); }
@@ -109,5 +134,21 @@ class ResourceController extends Controller
         $base = Str::slug($name) ?: 'resource'; $slug = $base; $i = 2;
         while (Resource::where('slug', $slug)->exists()) $slug = $base.'-'.$i++;
         return $slug;
+    }
+
+    /**
+     * @return array{url: string, host: string}
+     */
+    private function externalDestination(Resource $resource): array
+    {
+        abort_unless($resource->delivery_type === 'external', 404);
+
+        $url = $resource->external_url;
+        $scheme = is_string($url) ? parse_url($url, PHP_URL_SCHEME) : null;
+        $host = is_string($url) ? parse_url($url, PHP_URL_HOST) : null;
+
+        abort_unless(in_array($scheme, ['http', 'https'], true) && is_string($host) && $host !== '', 404);
+
+        return ['url' => $url, 'host' => $host];
     }
 }

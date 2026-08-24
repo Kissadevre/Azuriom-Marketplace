@@ -4,4 +4,5 @@ return [
  'fields'=>['category'=>'Categoría','version'=>'Versión','summary'=>'Resumen','description'=>'Descripción','delivery'=>'Tipo de entrega','price'=>'Precio en monedas','file'=>'Archivo','url'=>'URL externa'],
  'status'=>['pending'=>'Este recurso está esperando aprobación.','published'=>'Publicado','rejected'=>'Este recurso fue rechazado.'],
  'notifications'=>['comment'=>':user comentó en tu recurso ":resource".','approved'=>'Tu recurso ":resource" fue aprobado.','rejected'=>'Tu recurso ":resource" fue rechazado. Motivo: :reason'],
+ 'external_warning'=>['title'=>'Estás abandonando el sitio','message'=>'Este recurso se encuentra alojado en un sitio externo. Marketplace no controla el contenido ni la seguridad de la página de destino.','destination'=>'Serás dirigido a:','continue'=>'Continuar al sitio externo','cancel'=>'No ir y volver al recurso'],
 ];

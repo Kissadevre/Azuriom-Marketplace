@@ -4,4 +4,5 @@ return [
  'fields'=>['category'=>'Category','version'=>'Version','summary'=>'Summary','description'=>'Description','delivery'=>'Delivery type','price'=>'Coin price','file'=>'File','url'=>'External URL'],
  'status'=>['pending'=>'This resource is awaiting approval.','published'=>'Published','rejected'=>'This resource was rejected.'],
  'notifications'=>['comment'=>':user commented on your resource ":resource".','approved'=>'Your resource ":resource" was approved.','rejected'=>'Your resource ":resource" was rejected. Reason: :reason'],
+ 'external_warning'=>['title'=>'You are leaving this site','message'=>'This resource is hosted on an external website. Marketplace does not control the content or security of the destination page.','destination'=>'You will be redirected to:','continue'=>'Continue to external site','cancel'=>'Stay and return to resource'],
 ];

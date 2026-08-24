@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/resource/{resource}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::post('/resource/{resource}/purchase', [ResourceController::class, 'purchase'])->name('resources.purchase');
     Route::get('/resource/{resource}/download', [ResourceController::class, 'download'])->name('resources.download');
+    Route::post('/resource/{resource}/external', [ResourceController::class, 'continueExternal'])->name('resources.external');
     Route::post('/resource/{resource}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     Route::post('/resource/{resource}/rating', [RatingController::class, 'store'])->name('ratings.store');

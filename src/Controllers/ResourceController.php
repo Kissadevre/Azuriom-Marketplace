@@ -21,7 +21,23 @@ class ResourceController extends Controller
     {
         abort_unless($this->canView($request, $resource), 403);
         $resource->load(['author', 'category', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
-        return view('marketplace::resources.show', compact('resource'));
+
+        $categories = Category::enabled()->get();
+        if (! $this->hasResourceToolPermission($request)) {
+            $categories = $categories->filter->canAccess($request->user());
+        }
+
+        $relatedResources = Resource::published()
+            ->where('user_id', $resource->user_id)
+            ->whereKeyNot($resource->id)
+            ->whereIn('category_id', $categories->pluck('id'))
+            ->with(['category', 'latestUpdate'])
+            ->withAvg('ratings', 'rating')
+            ->latest('published_at')
+            ->limit(4)
+            ->get();
+
+        return view('marketplace::resources.show', compact('resource', 'relatedResources'));
     }
 
     public function banner(Request $request, Resource $resource)

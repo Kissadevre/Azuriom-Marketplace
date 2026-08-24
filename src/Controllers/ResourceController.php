@@ -230,6 +230,7 @@ class ResourceController extends Controller
         }
 
         return collect([
+            'marketplace.admin',
             'marketplace.moderate',
             'marketplace.archive',
             'marketplace.pause',

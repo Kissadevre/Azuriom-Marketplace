@@ -14,8 +14,9 @@ class HomeController extends Controller
     {
         $canModerate = $request->user()?->can('marketplace.moderate') ?? false;
         $categories = $this->categories($request, $canModerate);
+        $sort = $this->sort($request);
 
-        $resources = Resource::query()
+        $query = Resource::query()
             ->with(['category', 'author', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->when(! $canModerate, fn (Builder $query) => $query
@@ -25,28 +26,29 @@ class HomeController extends Controller
                 fn (Builder $query) => $query
                     ->where('name', 'like', '%'.$request->string('search').'%')
                     ->orWhere('summary', 'like', '%'.$request->string('search').'%')
-            ))
-            ->when($canModerate, fn (Builder $query) => $query->latest('updated_at'), fn (Builder $query) => $query->latest('published_at'))
+            ));
+
+        $resources = $this->applySorting($query, $sort)
             ->paginate(12)
             ->withQueryString();
 
-        return view('marketplace::index', compact('categories', 'resources', 'canModerate'));
+        return view('marketplace::index', compact('categories', 'resources', 'canModerate', 'sort'));
     }
 
     public function category(Request $request, Category $category)
     {
         $canModerate = $request->user()?->can('marketplace.moderate') ?? false;
+        $sort = $this->sort($request);
         abort_unless($category->is_enabled && ($canModerate || $category->canAccess($request->user())), 403);
 
-        $resources = $category->resources()
+        $query = $category->resources()
             ->when(! $canModerate, fn (Builder $query) => $query->published())
             ->with(['author', 'latestUpdate'])
-            ->withAvg('ratings', 'rating')
-            ->when($canModerate, fn (Builder $query) => $query->latest('updated_at'), fn (Builder $query) => $query->latest('published_at'))
-            ->paginate(12);
+            ->withAvg('ratings', 'rating');
+        $resources = $this->applySorting($query, $sort)->paginate(12)->withQueryString();
         $categories = $this->categories($request, $canModerate);
 
-        return view('marketplace::index', compact('categories', 'resources', 'category', 'canModerate'));
+        return view('marketplace::index', compact('categories', 'resources', 'category', 'canModerate', 'sort'));
     }
 
     private function categories(Request $request, bool $canModerate)
@@ -54,5 +56,29 @@ class HomeController extends Controller
         $categories = Category::enabled()->orderBy('position')->get();
 
         return $canModerate ? $categories : $categories->filter->canAccess($request->user());
+    }
+
+    private function sort(Request $request): string
+    {
+        $sort = $request->string('sort')->toString();
+
+        return in_array($sort, ['updated', 'downloads', 'rating'], true) ? $sort : 'updated';
+    }
+
+    private function applySorting(Builder $query, string $sort): Builder
+    {
+        return match ($sort) {
+            'downloads' => $query
+                ->orderByDesc('marketplace_resources.downloads')
+                ->orderByDesc('marketplace_resources.published_at')
+                ->orderByDesc('marketplace_resources.id'),
+            'rating' => $query
+                ->orderByRaw('COALESCE((SELECT AVG(mrr.rating) FROM marketplace_ratings AS mrr WHERE mrr.resource_id = marketplace_resources.id), 0) DESC')
+                ->orderByDesc('marketplace_resources.downloads')
+                ->orderByDesc('marketplace_resources.id'),
+            default => $query
+                ->orderByRaw('COALESCE((SELECT MAX(mru.created_at) FROM marketplace_resource_updates AS mru WHERE mru.resource_id = marketplace_resources.id), marketplace_resources.published_at, marketplace_resources.created_at) DESC')
+                ->orderByDesc('marketplace_resources.id'),
+        };
     }
 }

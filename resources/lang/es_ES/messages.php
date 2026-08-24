@@ -12,4 +12,5 @@ return [
  'editor'=>['help'=>'Puedes usar encabezados, listas, enlaces, imágenes externas, tablas y otros formatos. El contenido peligroso se eliminará automáticamente.'],
  'banner'=>['help'=>'Imagen opcional JPG, PNG o WebP. Máximo 5 MB y 4096 × 4096 píxeles.','remove'=>'Eliminar el banner actual'],
  'updates'=>['title'=>'Historial de versiones','publish'=>'Publicar una nueva versión','version'=>'Nueva versión','changelog'=>'Cambios de esta versión','file'=>'Archivo actualizado','url'=>'Enlace actualizado','publish_action'=>'Publicar actualización','published'=>'La nueva versión fue publicada correctamente.','updated'=>'Actualizado','last_update'=>'Última actualización:','by'=>'Publicado por :user','empty'=>'Este recurso todavía no tiene actualizaciones.'],
+ 'sort'=>['label'=>'Ordenar recursos','updated'=>'Actualizados recientemente','downloads'=>'Mayor número de descargas','rating'=>'Mejor valoración','apply'=>'Filtrar'],
 ];

@@ -15,14 +15,14 @@
 
     <div class="row">
         <aside class="col-lg-3 mb-4"><div class="list-group">
-            <a href="{{ route('marketplace.index') }}" class="list-group-item list-group-item-action">@lang('marketplace::messages.all_categories')</a>
+            <a href="{{ route('marketplace.index', ['sort' => $sort]) }}" class="list-group-item list-group-item-action">@lang('marketplace::messages.all_categories')</a>
             @foreach($categories as $item)
-                <a href="{{ route('marketplace.categories.show', $item) }}" class="list-group-item list-group-item-action @if(isset($category) && $category->is($item)) active @endif"><i class="{{ $item->icon }} me-2"></i>{{ $item->name }}</a>
+                <a href="{{ route('marketplace.categories.show', ['category' => $item, 'sort' => $sort]) }}" class="list-group-item list-group-item-action @if(isset($category) && $category->is($item)) active @endif"><i class="{{ $item->icon }} me-2"></i>{{ $item->name }}</a>
             @endforeach
         </div></aside>
 
         <main class="col-lg-9">
-            <form class="mb-4"><div class="input-group"><input class="form-control" name="search" value="{{ request('search') }}" placeholder="@lang('marketplace::messages.search')"><button class="btn btn-outline-primary"><i class="bi bi-search"></i></button></div></form>
+            <form class="mb-4"><div class="input-group"><input class="form-control" name="search" value="{{ request('search') }}" placeholder="@lang('marketplace::messages.search')"><select class="form-select" name="sort" aria-label="@lang('marketplace::messages.sort.label')" style="max-width: 16rem;"><option value="updated" @selected($sort === 'updated')>@lang('marketplace::messages.sort.updated')</option><option value="downloads" @selected($sort === 'downloads')>@lang('marketplace::messages.sort.downloads')</option><option value="rating" @selected($sort === 'rating')>@lang('marketplace::messages.sort.rating')</option></select><button class="btn btn-outline-primary">@lang('marketplace::messages.sort.apply')</button></div></form>
             <div class="row g-3">
                 @forelse($resources as $resource)
                     <div class="col-md-6"><div class="card h-100">

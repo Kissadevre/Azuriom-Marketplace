@@ -60,9 +60,23 @@
     <div class="card mb-4">
         <div class="card-header"><strong>@lang('marketplace::admin.settings.files')</strong></div>
         <div class="card-body">
-            <label class="form-label fw-semibold" for="maxFileSize">@lang('marketplace::admin.settings.max_file_size')</label>
-            <div class="input-group" style="max-width: 32rem;"><input id="maxFileSize" type="number" min="1" max="1048576" name="max_file_size" class="form-control @error('max_file_size') is-invalid @enderror" value="{{ old('max_file_size', setting('marketplace.max_file_size', 51200)) }}" required><span class="input-group-text">KB</span>@error('max_file_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
-            <small class="form-text text-muted">@lang('marketplace::admin.settings.max_file_size_help')</small>
+            <div class="mb-4">
+                <label class="form-label fw-semibold" for="maxFileSize">@lang('marketplace::admin.settings.max_file_size')</label>
+                <div class="input-group" style="max-width: 32rem;"><input id="maxFileSize" type="number" min="1" max="1048576" name="max_file_size" class="form-control @error('max_file_size') is-invalid @enderror" value="{{ old('max_file_size', setting('marketplace.max_file_size', 51200)) }}" required><span class="input-group-text">KB</span>@error('max_file_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                <small class="form-text text-muted">@lang('marketplace::admin.settings.max_file_size_help')</small>
+            </div>
+
+            <div>
+                <label class="form-label fw-semibold" for="allowedExtensions">@lang('marketplace::admin.settings.allowed_extensions')</label>
+                <textarea id="allowedExtensions" name="allowed_extensions" class="form-control font-monospace @error('allowed_extensions') is-invalid @enderror" rows="3" required>{{ old('allowed_extensions', $allowedExtensions) }}</textarea>
+                @error('allowed_extensions')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                <small class="form-text text-muted">@lang('marketplace::admin.settings.allowed_extensions_help')</small>
+                <div class="alert alert-danger mt-3 mb-0">
+                    <i class="bi bi-shield-exclamation me-2" aria-hidden="true"></i>
+                    <strong>@lang('marketplace::admin.settings.blocked_extensions')</strong>
+                    <div class="small mt-2 text-break">{{ collect($forbiddenExtensions)->map(fn ($extension) => '.'.$extension)->implode(', ') }}</div>
+                </div>
+            </div>
         </div>
     </div>
 

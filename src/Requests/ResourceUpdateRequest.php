@@ -2,6 +2,8 @@
 
 namespace Azuriom\Plugin\Marketplace\Requests;
 
+use Azuriom\Plugin\Marketplace\Rules\AllowedResourceExtension;
+use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,6 +20,7 @@ class ResourceUpdateRequest extends FormRequest
     public function rules(): array
     {
         $resource = $this->route('resource');
+        $allowedExtensions = app(ResourceFilePolicy::class)->allowedExtensions();
 
         return [
             'version' => [
@@ -32,6 +35,7 @@ class ResourceUpdateRequest extends FormRequest
                 Rule::requiredIf($resource->delivery_type === 'file'),
                 'nullable',
                 'file',
+                new AllowedResourceExtension($allowedExtensions),
                 'max:'.((int) setting('marketplace.max_file_size', 51200)),
             ],
             'external_url' => [

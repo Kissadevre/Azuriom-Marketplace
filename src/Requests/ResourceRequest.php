@@ -2,6 +2,8 @@
 
 namespace Azuriom\Plugin\Marketplace\Requests;
 
+use Azuriom\Plugin\Marketplace\Rules\AllowedResourceExtension;
+use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,6 +13,8 @@ class ResourceRequest extends FormRequest
     public function rules(): array
     {
         $resource = $this->route('resource');
+        $allowedExtensions = app(ResourceFilePolicy::class)->allowedExtensions();
+
         return [
             'category_id' => ['required', Rule::exists('marketplace_categories', 'id')->where('is_enabled', true)],
             'name' => ['required', 'string', 'max:100'],
@@ -20,7 +24,7 @@ class ResourceRequest extends FormRequest
             'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
             'remove_banner' => ['sometimes', 'boolean'],
             'delivery_type' => ['required', Rule::in(['file', 'external'])],
-            'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', 'max:'.((int) setting('marketplace.max_file_size', 51200))],
+            'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', new AllowedResourceExtension($allowedExtensions), 'max:'.((int) setting('marketplace.max_file_size', 51200))],
             'external_url' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'external'), 'nullable', 'url:http,https', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0', 'max:999999999'],
         ];

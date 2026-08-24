@@ -63,7 +63,11 @@
                                 @lang($category->is_enabled ? 'marketplace::admin.categories.active' : 'marketplace::admin.categories.disabled')
                             </span>
                         </td>
-                        <td class="text-center"><span class="badge bg-primary rounded-pill">{{ $category->resources_count }}</span></td>
+                        <td class="text-center">
+                            <a href="{{ route('marketplace.admin.categories.resources', $category) }}" class="badge bg-primary rounded-pill text-decoration-none" title="@lang('marketplace::admin.resource_list.open', ['category' => $category->name])" data-bs-toggle="tooltip">
+                                {{ $category->resources_count }}
+                            </a>
+                        </td>
                         <td class="text-center text-muted">{{ $category->position }}</td>
                         <td class="text-end text-nowrap">
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('marketplace.admin.categories.edit', $category) }}" title="@lang('messages.actions.edit')" data-bs-toggle="tooltip">

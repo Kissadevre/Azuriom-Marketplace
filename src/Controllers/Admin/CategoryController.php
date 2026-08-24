@@ -23,6 +23,17 @@ class CategoryController extends Controller
         ]);
     }
 
+    public function resources(Category $category)
+    {
+        return view('marketplace::admin.categories.resources', [
+            'category' => $category,
+            'resources' => $category->resources()
+                ->with('author')
+                ->latest()
+                ->paginate(20),
+        ]);
+    }
+
     public function store(CategoryRequest $request)
     {
         Category::create($request->validated());

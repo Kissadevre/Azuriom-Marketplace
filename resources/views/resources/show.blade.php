@@ -41,20 +41,20 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end marketplace-moderation-menu">
                                     @if(auth()->user()->can('marketplace.moderate') && $resource->status === 'pending')
-                                        <form method="POST" action="{{ route('marketplace.resources.approve', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-success" type="submit"><i class="bi bi-check-circle me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.approve')</button></form>
-                                        <form method="POST" action="{{ route('marketplace.resources.reject', $resource) }}" class="px-3 py-2 border-top border-bottom"><input name="moderation_note" class="form-control form-control-sm mb-2" maxlength="2000" required placeholder="@lang('marketplace::messages.moderation.reason')">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-danger w-100" type="submit">@lang('marketplace::messages.moderation.reject')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.approve', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-success marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.approve')"><i class="bi bi-check-circle me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.approve')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.reject', $resource) }}">@csrf @method('PATCH')<input type="hidden" name="moderation_note"><button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.reject')" data-confirm-reason="true"><i class="bi bi-x-circle me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.reject')</button></form>
                                     @endif
                                     @can('marketplace.pause')
-                                        <form method="POST" action="{{ $resource->isPaused() ? route('marketplace.resources.resume', $resource) : route('marketplace.resources.pause', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-warning" type="submit"><i class="bi bi-{{ $resource->isPaused() ? 'play-circle' : 'pause-circle' }} me-2" aria-hidden="true"></i>@lang($resource->isPaused() ? 'marketplace::messages.moderation.resume' : 'marketplace::messages.moderation.pause')</button></form>
+                                        <form method="POST" action="{{ $resource->isPaused() ? route('marketplace.resources.resume', $resource) : route('marketplace.resources.pause', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-warning marketplace-confirm-action" type="button" data-confirm-message="@lang($resource->isPaused() ? 'marketplace::messages.confirm.resume' : 'marketplace::messages.confirm.pause')"><i class="bi bi-{{ $resource->isPaused() ? 'play-circle' : 'pause-circle' }} me-2" aria-hidden="true"></i>@lang($resource->isPaused() ? 'marketplace::messages.moderation.resume' : 'marketplace::messages.moderation.pause')</button></form>
                                     @endcan
                                     @can('marketplace.reset-ratings')
-                                        <form method="POST" action="{{ route('marketplace.resources.ratings.reset', $resource) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.reset_ratings')))">@csrf @method('DELETE')<button class="dropdown-item" type="submit"><i class="bi bi-star me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.reset_ratings')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.ratings.reset', $resource) }}">@csrf @method('DELETE')<button class="dropdown-item marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.reset_ratings')"><i class="bi bi-star me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.reset_ratings')</button></form>
                                     @endcan
                                     @can('marketplace.archive')
-                                        <form method="POST" action="{{ route('marketplace.resources.archive', $resource) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.archive')))">@csrf @method('PATCH')<button class="dropdown-item text-danger" type="submit"><i class="bi bi-archive me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.archive')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.archive', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.archive')"><i class="bi bi-archive me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.archive')</button></form>
                                     @endcan
                                     @if($resource->isOwnedBy(auth()->user()) || auth()->user()->can('marketplace.delete'))
-                                        <form method="POST" action="{{ route('marketplace.resources.destroy', $resource) }}" class="border-top" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_resource')))">@csrf @method('DELETE')<button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_resource')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.destroy', $resource) }}" class="border-top">@csrf @method('DELETE')<button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.delete_resource')"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_resource')</button></form>
                                     @endif
                                 </div>
                             </div>
@@ -93,14 +93,14 @@
                                             <i class="bi bi-three-dots-vertical" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.comment_actions')</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-end">
-                                            <form method="POST" action="{{ route('marketplace.comments.destroy', $comment) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_comment')))">
+                                            <form method="POST" action="{{ route('marketplace.comments.destroy', $comment) }}">
                                                 @csrf @method('DELETE')
-                                                <button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_comment')</button>
+                                                <button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.delete_comment')"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_comment')</button>
                                             </form>
                                             @if(auth()->user()->can('marketplace.delete-comments'))
-                                                <form method="POST" action="{{ route('marketplace.comments.user.destroy', $comment->user) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_user_comments', ['user' => $comment->user->name])))">
+                                                <form method="POST" action="{{ route('marketplace.comments.user.destroy', $comment->user) }}">
                                                     @csrf @method('DELETE')
-                                                    <button class="dropdown-item text-danger" type="submit"><i class="bi bi-person-x me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_user_comments')</button>
+                                                    <button class="dropdown-item text-danger marketplace-confirm-action" type="button" data-confirm-message="@lang('marketplace::messages.confirm.delete_user_comments', ['user' => $comment->user->name])"><i class="bi bi-person-x me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_user_comments')</button>
                                                 </form>
                                             @endif
                                         </div>
@@ -161,4 +161,85 @@
         </aside>
     </div>
 </div>
+
+@auth
+    <div class="modal fade" id="marketplaceConfirmModal" tabindex="-1" aria-labelledby="marketplaceConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="marketplaceConfirmModalLabel">@lang('marketplace::messages.confirm.title')</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@lang('marketplace::messages.confirm.cancel')"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="marketplaceConfirmMessage" class="mb-0"></p>
+                    <div id="marketplaceConfirmReasonGroup" class="mt-3 d-none">
+                        <label class="form-label" for="marketplaceConfirmReason">@lang('marketplace::messages.moderation.reason')</label>
+                        <textarea id="marketplaceConfirmReason" class="form-control" rows="4" maxlength="2000"></textarea>
+                        <div class="invalid-feedback">@lang('marketplace::messages.confirm.reason_required')</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('marketplace::messages.confirm.cancel')</button>
+                    <button type="button" class="btn btn-danger" id="marketplaceConfirmSubmit">@lang('marketplace::messages.confirm.action')</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endauth
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalElement = document.getElementById('marketplaceConfirmModal');
+
+        if (! modalElement) {
+            return;
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+        const message = document.getElementById('marketplaceConfirmMessage');
+        const reasonGroup = document.getElementById('marketplaceConfirmReasonGroup');
+        const reason = document.getElementById('marketplaceConfirmReason');
+        const submit = document.getElementById('marketplaceConfirmSubmit');
+        let actionForm = null;
+
+        document.querySelectorAll('.marketplace-confirm-action').forEach((button) => {
+            button.addEventListener('click', () => {
+                actionForm = button.closest('form');
+                message.textContent = button.dataset.confirmMessage;
+                reasonGroup.classList.toggle('d-none', button.dataset.confirmReason !== 'true');
+                reason.value = '';
+                reason.classList.remove('is-invalid');
+                modal.show();
+            });
+        });
+
+        submit.addEventListener('click', () => {
+            if (! actionForm) {
+                return;
+            }
+
+            const reasonInput = actionForm.querySelector('input[name="moderation_note"]');
+
+            if (reasonInput && reason.value.trim() === '') {
+                reason.classList.add('is-invalid');
+                reason.focus();
+                return;
+            }
+
+            if (reasonInput) {
+                reasonInput.value = reason.value.trim();
+            }
+
+            submit.disabled = true;
+            actionForm.submit();
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            actionForm = null;
+            submit.disabled = false;
+        });
+    });
+</script>
+@endpush

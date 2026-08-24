@@ -5,13 +5,19 @@
 @section('content')
 <div class="container content">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div><h1>@lang('marketplace::messages.title')</h1><p class="text-muted mb-0">@lang('marketplace::messages.subtitle')</p></div>
+        <div>
+            <h1>
+                @lang('marketplace::messages.title')
+                @if($canModerate)
+                    <span class="d-inline-block align-middle fs-4 text-info" tabindex="0" role="img" aria-label="@lang('marketplace::messages.moderation.index_notice')" title="@lang('marketplace::messages.moderation.index_notice')" data-bs-toggle="tooltip" data-bs-placement="right">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    </span>
+                @endif
+            </h1>
+            <p class="text-muted mb-0">@lang('marketplace::messages.subtitle')</p>
+        </div>
         @auth<a class="btn btn-primary" href="{{ route('marketplace.resources.create') }}"><i class="bi bi-plus-lg"></i> @lang('marketplace::messages.submit')</a>@endauth
     </div>
-
-    @if($canModerate)
-        <div class="alert alert-info"><i class="bi bi-shield-check me-2"></i>@lang('marketplace::messages.moderation.index_notice')</div>
-    @endif
 
     <div class="row">
         <aside class="col-lg-3 mb-4"><div class="list-group">

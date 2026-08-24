@@ -17,7 +17,10 @@
         <aside class="col-lg-3 mb-4"><div class="list-group">
             <a href="{{ route('marketplace.index', ['sort' => $sort]) }}" class="list-group-item list-group-item-action">@lang('marketplace::messages.all_categories')</a>
             @foreach($categories as $item)
-                <a href="{{ route('marketplace.categories.show', ['category' => $item, 'sort' => $sort]) }}" class="list-group-item list-group-item-action @if(isset($category) && $category->is($item)) active @endif"><i class="{{ $item->icon }} me-2"></i>{{ $item->name }}</a>
+                <a href="{{ route('marketplace.categories.show', ['category' => $item, 'sort' => $sort]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 @if(isset($category) && $category->is($item)) active @endif">
+                    <span><i class="{{ $item->icon }} me-2"></i>{{ $item->name }}</span>
+                    <span class="badge rounded-pill {{ isset($category) && $category->is($item) ? 'bg-light text-dark' : 'bg-secondary' }}">{{ $item->resources_count }}</span>
+                </a>
             @endforeach
         </div></aside>
 

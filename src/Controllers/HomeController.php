@@ -54,7 +54,13 @@ class HomeController extends Controller
 
     private function categories(Request $request, bool $canModerate)
     {
-        $categories = Category::enabled()->orderBy('position')->get();
+        $categories = Category::enabled()
+            ->withCount([
+                'resources' => fn (Builder $query) => $query
+                    ->when(! $canModerate, fn (Builder $query) => $query->published()),
+            ])
+            ->orderBy('position')
+            ->get();
 
         return $canModerate ? $categories : $categories->filter->canAccess($request->user());
     }

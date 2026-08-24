@@ -1,0 +1,13 @@
+{
+    "id": "marketplace",
+    "name": "Marketplace",
+    "description": "Community marketplace for downloadable and external resources.",
+    "version": "1.0.0",
+    "url": "https://zibuu.net/",
+    "authors": ["Zibuu", "Kissadere"],
+    "azuriom_api": "1.2.0",
+    "providers": [
+        "\\Azuriom\\Plugin\\Marketplace\\Providers\\MarketplaceServiceProvider",
+        "\\Azuriom\\Plugin\\Marketplace\\Providers\\RouteServiceProvider"
+    ]
+}

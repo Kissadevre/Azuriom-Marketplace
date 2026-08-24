@@ -1,0 +1,9 @@
+{
+    "name": "zibuu/marketplace",
+    "type": "azuriom-plugin",
+    "description": "Community marketplace for Azuriom.",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {"Azuriom\\Plugin\\Marketplace\\": "src/"}
+    }
+}

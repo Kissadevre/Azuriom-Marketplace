@@ -16,16 +16,12 @@ class HomeController extends Controller
         $categories = $this->categories($request, $canModerate);
         $sort = $this->sort($request);
         $myResourcesCount = $this->myResourcesCount($request);
-        $mine = $request->boolean('mine');
-
-        abort_if($mine && $request->user() === null, 403);
+        $mine = false;
 
         $query = Resource::query()
             ->with(['category', 'author', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
-            ->when($mine, fn (Builder $query) => $query
-                ->where('user_id', $request->user()->id))
-            ->when(! $mine && ! $canModerate, fn (Builder $query) => $query
+            ->when(! $canModerate, fn (Builder $query) => $query
                 ->published()
                 ->whereIn('category_id', $categories->pluck('id')))
             ->when($request->filled('search'), fn (Builder $query) => $query->where(
@@ -58,6 +54,31 @@ class HomeController extends Controller
         $categories = $this->categories($request, $canModerate);
 
         return view('marketplace::index', compact('categories', 'resources', 'category', 'canModerate', 'sort', 'myResourcesCount', 'mine'));
+    }
+
+    public function mine(Request $request)
+    {
+        $canModerate = $request->user()->can('marketplace.moderate');
+        $categories = $this->categories($request, $canModerate);
+        $sort = $this->sort($request);
+        $myResourcesCount = $this->myResourcesCount($request);
+        $mine = true;
+
+        $query = Resource::query()
+            ->where('user_id', $request->user()->id)
+            ->with(['category', 'author', 'latestUpdate'])
+            ->withAvg('ratings', 'rating')
+            ->when($request->filled('search'), fn (Builder $query) => $query->where(
+                fn (Builder $query) => $query
+                    ->where('name', 'like', '%'.$request->string('search').'%')
+                    ->orWhere('summary', 'like', '%'.$request->string('search').'%')
+            ));
+
+        $resources = $this->applySorting($query, $sort)
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('marketplace::index', compact('categories', 'resources', 'canModerate', 'sort', 'myResourcesCount', 'mine'));
     }
 
     private function categories(Request $request, bool $canModerate)

@@ -14,6 +14,7 @@ Route::get('/resource/{resource}', [ResourceController::class, 'show'])->name('r
 Route::get('/resource/{resource}/banner', [ResourceController::class, 'banner'])->name('resources.banner');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
     Route::get('/submit', [ResourceController::class, 'create'])->name('resources.create');
     Route::post('/submit', [ResourceController::class, 'store'])->name('resources.store');
     Route::get('/resource/{resource}/edit', [ResourceController::class, 'edit'])->name('resources.edit');

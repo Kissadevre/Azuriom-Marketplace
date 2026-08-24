@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/category/{category:slug}', [HomeController::class, 'category'])->name('categories.show');
 Route::get('/resource/{resource}', [ResourceController::class, 'show'])->name('resources.show');
+Route::get('/resource/{resource}/banner', [ResourceController::class, 'banner'])->name('resources.banner');
 
 Route::middleware('auth')->group(function () {
     Route::get('/submit', [ResourceController::class, 'create'])->name('resources.create');

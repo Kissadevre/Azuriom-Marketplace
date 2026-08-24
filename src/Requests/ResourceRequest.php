@@ -17,6 +17,8 @@ class ResourceRequest extends FormRequest
             'version' => ['nullable', 'string', 'max:30'],
             'summary' => ['required', 'string', 'max:500'],
             'description' => ['required', 'string', 'max:50000'],
+            'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
+            'remove_banner' => ['sometimes', 'boolean'],
             'delivery_type' => ['required', Rule::in(['file', 'external'])],
             'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', 'max:'.((int) setting('marketplace.max_file_size', 51200))],
             'external_url' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'external'), 'nullable', 'url:http,https', 'max:2000'],

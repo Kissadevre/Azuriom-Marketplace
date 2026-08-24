@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('version')->nullable();
             $table->text('summary');
             $table->longText('description');
+            $table->string('banner_path')->nullable();
             $table->string('delivery_type', 20);
             $table->string('file_path')->nullable();
             $table->text('external_url')->nullable();

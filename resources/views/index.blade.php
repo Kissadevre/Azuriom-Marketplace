@@ -25,7 +25,9 @@
             <form class="mb-4"><div class="input-group"><input class="form-control" name="search" value="{{ request('search') }}" placeholder="@lang('marketplace::messages.search')"><button class="btn btn-outline-primary"><i class="bi bi-search"></i></button></div></form>
             <div class="row g-3">
                 @forelse($resources as $resource)
-                    <div class="col-md-6"><div class="card h-100"><div class="card-body">
+                    <div class="col-md-6"><div class="card h-100">
+                        @if($resource->banner_path)<a href="{{ route('marketplace.resources.show', $resource) }}"><img src="{{ route('marketplace.resources.banner', $resource) }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $resource->name }}" loading="lazy"></a>@endif
+                        <div class="card-body">
                         <div class="d-flex justify-content-between gap-2">
                             <div>
                                 <span class="badge bg-secondary">{{ $resource->category->name }}</span>

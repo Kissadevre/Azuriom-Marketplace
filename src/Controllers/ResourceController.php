@@ -19,14 +19,25 @@ class ResourceController extends Controller
 {
     public function show(Request $request, Resource $resource)
     {
-        abort_unless(
-            ($resource->status === 'published' && $resource->category->canAccess($request->user()))
-            || $resource->isOwnedBy($request->user())
-            || $this->hasResourceToolPermission($request),
-            403
-        );
+        abort_unless($this->canView($request, $resource), 403);
         $resource->load(['author', 'category', 'comments.user', 'ratings']);
         return view('marketplace::resources.show', compact('resource'));
+    }
+
+    public function banner(Request $request, Resource $resource)
+    {
+        abort_unless($this->canView($request, $resource), 403);
+        abort_unless(
+            $resource->banner_path
+            && Storage::disk('local')->exists($resource->banner_path),
+            404
+        );
+
+        return Storage::disk('local')->response(
+            $resource->banner_path,
+            null,
+            ['Cache-Control' => 'private, max-age=3600']
+        );
     }
 
     public function create(Request $request)
@@ -36,8 +47,11 @@ class ResourceController extends Controller
 
     public function store(ResourceRequest $request)
     {
+        abort_unless(
+            Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
+            403
+        );
         $data = $this->payload($request);
-        abort_unless(Category::findOrFail($data['category_id'])->canAccess($request->user()), 403);
         $data['user_id'] = $request->user()->id;
         $data['slug'] = $this->uniqueSlug($data['name']);
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
@@ -55,12 +69,12 @@ class ResourceController extends Controller
     public function update(ResourceRequest $request, Resource $resource)
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
-        $data = $this->payload($request, $resource);
         abort_unless(
             $request->user()->can('marketplace.edit')
-            || Category::findOrFail($data['category_id'])->canAccess($request->user()),
+            || Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
             403
         );
+        $data = $this->payload($request, $resource);
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published'
             ? ($resource->published_at ?? now())
@@ -72,7 +86,7 @@ class ResourceController extends Controller
     public function destroy(Request $request, Resource $resource)
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.delete'), 403);
-        if ($resource->file_path) Storage::disk('local')->delete($resource->file_path);
+        Storage::disk('local')->delete(array_filter([$resource->file_path, $resource->banner_path]));
         $resource->delete();
         return to_route('marketplace.index')->with('success', trans('messages.status.success'));
     }
@@ -138,7 +152,7 @@ class ResourceController extends Controller
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except('file');
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner']);
         $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
 
         if ($data['description'] === '') {
@@ -147,6 +161,17 @@ class ResourceController extends Controller
                     'attribute' => trans('marketplace::messages.fields.description'),
                 ]),
             ]);
+        }
+
+        if ($request->hasFile('banner')) {
+            $bannerPath = $request->file('banner')->store('marketplace/banners', 'local');
+            if ($resource?->banner_path) {
+                Storage::disk('local')->delete($resource->banner_path);
+            }
+            $data['banner_path'] = $bannerPath;
+        } elseif ($request->boolean('remove_banner') && $resource?->banner_path) {
+            Storage::disk('local')->delete($resource->banner_path);
+            $data['banner_path'] = null;
         }
 
         if ($request->hasFile('file')) {
@@ -194,6 +219,13 @@ class ResourceController extends Controller
             'marketplace.delete-comments',
             'marketplace.reset-ratings',
         ])->contains(fn (string $permission) => $request->user()->can($permission));
+    }
+
+    private function canView(Request $request, Resource $resource): bool
+    {
+        return ($resource->status === 'published' && $resource->category->canAccess($request->user()))
+            || $resource->isOwnedBy($request->user())
+            || $this->hasResourceToolPermission($request);
     }
 
     /**

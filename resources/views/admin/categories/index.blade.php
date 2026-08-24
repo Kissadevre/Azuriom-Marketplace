@@ -1,29 +1,6 @@
 @extends('admin.layouts.admin')
 @section('title',trans('marketplace::admin.categories.title'))
 @section('content')
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card h-100"><div class="card-body d-flex align-items-center justify-content-between gap-3">
-            <div><div class="text-muted mb-1">@lang('marketplace::admin.stats.published')</div><div class="fs-2 fw-semibold">{{ $publishedResources }}</div></div>
-            <i class="bi bi-check-circle-fill fs-1 text-success" aria-hidden="true"></i>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100"><div class="card-body d-flex align-items-center justify-content-between gap-3">
-            <div><div class="text-muted mb-1">@lang('marketplace::admin.stats.pending')</div><div class="fs-2 fw-semibold">{{ $pendingResources }}</div></div>
-            <i class="bi bi-hourglass-split fs-1 text-warning" aria-hidden="true"></i>
-        </div></div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100"><div class="card-body d-flex align-items-center justify-content-between gap-3">
-            <div><div class="text-muted mb-1">@lang('marketplace::admin.stats.spent')</div><div class="fs-2 fw-semibold">{{ format_money($spentPoints) }}</div></div>
-            <i class="bi bi-coin fs-1 text-primary" aria-hidden="true"></i>
-        </div></div>
-    </div>
-</div>
-
-@include('marketplace::admin._nav')
-
 <div class="d-flex justify-content-between mb-3">
     <h1>@lang('marketplace::admin.categories.title')</h1>
     <a href="{{ route('marketplace.admin.categories.create') }}" class="btn btn-primary">@lang('messages.actions.add')</a>

@@ -43,9 +43,14 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
         return [
             'marketplace' => [
                 'name' => trans('marketplace::admin.title'),
+                'type' => 'dropdown',
                 'icon' => 'bi bi-shop',
                 'permission' => 'marketplace.admin',
-                'route' => 'marketplace.admin.categories.index',
+                'route' => 'marketplace.admin.*',
+                'items' => [
+                    'marketplace.admin.categories.index' => trans('marketplace::admin.categories.title'),
+                    'marketplace.admin.settings.edit' => trans('marketplace::admin.settings.title'),
+                ],
             ],
         ];
     }

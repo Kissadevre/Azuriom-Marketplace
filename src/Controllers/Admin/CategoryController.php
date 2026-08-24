@@ -5,8 +5,6 @@ namespace Azuriom\Plugin\Marketplace\Controllers\Admin;
 use Azuriom\Http\Controllers\Controller;
 use Azuriom\Models\Role;
 use Azuriom\Plugin\Marketplace\Models\Category;
-use Azuriom\Plugin\Marketplace\Models\Purchase;
-use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Requests\CategoryRequest;
 
 class CategoryController extends Controller
@@ -15,9 +13,6 @@ class CategoryController extends Controller
     {
         return view('marketplace::admin.categories.index', [
             'categories' => Category::withCount('resources')->orderBy('position')->get(),
-            'publishedResources' => Resource::published()->count(),
-            'pendingResources' => Resource::where('status', 'pending')->count(),
-            'spentPoints' => (float) Purchase::sum('price'),
         ]);
     }
 

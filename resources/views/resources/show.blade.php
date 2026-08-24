@@ -10,7 +10,7 @@
     .marketplace-resource-content pre { padding: 1rem; overflow: auto; border-radius: .375rem; background: var(--bs-tertiary-bg); }
     .marketplace-download-banner { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
     .marketplace-author-banner { width: 88px; height: 58px; flex: 0 0 88px; object-fit: cover; }
-    .marketplace-moderation-menu { min-width: 20rem; }
+    .marketplace-moderation-menu { min-width: 14rem; }
 </style>
 @endpush
 
@@ -39,24 +39,22 @@
                                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="@lang('marketplace::messages.moderation.menu')">
                                     <i class="bi bi-shield-check" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.moderation.menu')</span>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end marketplace-moderation-menu p-2">
-                                    <h2 class="dropdown-header">@lang('marketplace::messages.moderation.menu')</h2>
+                                <div class="dropdown-menu dropdown-menu-end marketplace-moderation-menu">
                                     @if(auth()->user()->can('marketplace.moderate') && $resource->status === 'pending')
-                                        <form method="POST" action="{{ route('marketplace.resources.approve', $resource) }}" class="mb-2">@csrf @method('PATCH')<button class="btn btn-success w-100">@lang('marketplace::messages.moderation.approve')</button></form>
-                                        <form method="POST" action="{{ route('marketplace.resources.reject', $resource) }}" class="mb-2">@csrf @method('PATCH')<input name="moderation_note" class="form-control form-control-sm mb-2" maxlength="2000" required placeholder="@lang('marketplace::messages.moderation.reason')"><button class="btn btn-outline-danger w-100">@lang('marketplace::messages.moderation.reject')</button></form>
-                                        <hr class="dropdown-divider">
+                                        <form method="POST" action="{{ route('marketplace.resources.approve', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-success" type="submit"><i class="bi bi-check-circle me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.approve')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.reject', $resource) }}" class="px-3 py-2 border-top border-bottom"><input name="moderation_note" class="form-control form-control-sm mb-2" maxlength="2000" required placeholder="@lang('marketplace::messages.moderation.reason')">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-danger w-100" type="submit">@lang('marketplace::messages.moderation.reject')</button></form>
                                     @endif
                                     @can('marketplace.pause')
-                                        <form method="POST" action="{{ $resource->isPaused() ? route('marketplace.resources.resume', $resource) : route('marketplace.resources.pause', $resource) }}" class="mb-2">@csrf @method('PATCH')<button class="btn btn-outline-warning w-100">@lang($resource->isPaused() ? 'marketplace::messages.moderation.resume' : 'marketplace::messages.moderation.pause')</button></form>
+                                        <form method="POST" action="{{ $resource->isPaused() ? route('marketplace.resources.resume', $resource) : route('marketplace.resources.pause', $resource) }}">@csrf @method('PATCH')<button class="dropdown-item text-warning" type="submit"><i class="bi bi-{{ $resource->isPaused() ? 'play-circle' : 'pause-circle' }} me-2" aria-hidden="true"></i>@lang($resource->isPaused() ? 'marketplace::messages.moderation.resume' : 'marketplace::messages.moderation.pause')</button></form>
                                     @endcan
                                     @can('marketplace.reset-ratings')
-                                        <form method="POST" action="{{ route('marketplace.resources.ratings.reset', $resource) }}" class="mb-2" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.reset_ratings')))">@csrf @method('DELETE')<button class="btn btn-outline-secondary w-100">@lang('marketplace::messages.moderation.reset_ratings')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.ratings.reset', $resource) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.reset_ratings')))">@csrf @method('DELETE')<button class="dropdown-item" type="submit"><i class="bi bi-star me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.reset_ratings')</button></form>
                                     @endcan
                                     @can('marketplace.archive')
-                                        <form method="POST" action="{{ route('marketplace.resources.archive', $resource) }}" class="mb-2" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.archive')))">@csrf @method('PATCH')<button class="btn btn-outline-danger w-100">@lang('marketplace::messages.moderation.archive')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.archive', $resource) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.archive')))">@csrf @method('PATCH')<button class="dropdown-item text-danger" type="submit"><i class="bi bi-archive me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.archive')</button></form>
                                     @endcan
                                     @if($resource->isOwnedBy(auth()->user()) || auth()->user()->can('marketplace.delete'))
-                                        <form method="POST" action="{{ route('marketplace.resources.destroy', $resource) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_resource')))">@csrf @method('DELETE')<button class="btn btn-danger w-100">@lang('marketplace::messages.moderation.delete_resource')</button></form>
+                                        <form method="POST" action="{{ route('marketplace.resources.destroy', $resource) }}" class="border-top" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_resource')))">@csrf @method('DELETE')<button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_resource')</button></form>
                                     @endif
                                 </div>
                             </div>

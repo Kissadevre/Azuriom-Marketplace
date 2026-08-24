@@ -15,11 +15,17 @@ class HomeController extends Controller
         $canModerate = $request->user()?->can('marketplace.moderate') ?? false;
         $categories = $this->categories($request, $canModerate);
         $sort = $this->sort($request);
+        $myResourcesCount = $this->myResourcesCount($request);
+        $mine = $request->boolean('mine');
+
+        abort_if($mine && $request->user() === null, 403);
 
         $query = Resource::query()
             ->with(['category', 'author', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
-            ->when(! $canModerate, fn (Builder $query) => $query
+            ->when($mine, fn (Builder $query) => $query
+                ->where('user_id', $request->user()->id))
+            ->when(! $mine && ! $canModerate, fn (Builder $query) => $query
                 ->published()
                 ->whereIn('category_id', $categories->pluck('id')))
             ->when($request->filled('search'), fn (Builder $query) => $query->where(
@@ -32,13 +38,15 @@ class HomeController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('marketplace::index', compact('categories', 'resources', 'canModerate', 'sort'));
+        return view('marketplace::index', compact('categories', 'resources', 'canModerate', 'sort', 'myResourcesCount', 'mine'));
     }
 
     public function category(Request $request, Category $category)
     {
         $canModerate = $request->user()?->can('marketplace.moderate') ?? false;
         $sort = $this->sort($request);
+        $myResourcesCount = $this->myResourcesCount($request);
+        $mine = false;
         abort_unless($category->is_enabled && ($canModerate || $category->canAccess($request->user())), 403);
 
         $query = Resource::query()
@@ -49,7 +57,7 @@ class HomeController extends Controller
         $resources = $this->applySorting($query, $sort)->paginate(12)->withQueryString();
         $categories = $this->categories($request, $canModerate);
 
-        return view('marketplace::index', compact('categories', 'resources', 'category', 'canModerate', 'sort'));
+        return view('marketplace::index', compact('categories', 'resources', 'category', 'canModerate', 'sort', 'myResourcesCount', 'mine'));
     }
 
     private function categories(Request $request, bool $canModerate)
@@ -70,6 +78,13 @@ class HomeController extends Controller
         $sort = $request->string('sort')->toString();
 
         return in_array($sort, ['updated', 'downloads', 'rating'], true) ? $sort : 'updated';
+    }
+
+    private function myResourcesCount(Request $request): int
+    {
+        return $request->user() === null
+            ? 0
+            : Resource::query()->where('user_id', $request->user()->id)->count();
     }
 
     private function applySorting(Builder $query, string $sort): Builder

@@ -16,6 +16,12 @@
     <div class="row">
         <aside class="col-lg-3 mb-4"><div class="list-group">
             <a href="{{ route('marketplace.index', ['sort' => $sort]) }}" class="list-group-item list-group-item-action">@lang('marketplace::messages.all_categories')</a>
+            @if($myResourcesCount > 0)
+                <a href="{{ route('marketplace.index', ['mine' => 1, 'sort' => $sort]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 @if($mine) active @endif">
+                    <span><i class="bi bi-person-circle me-2"></i>@lang('marketplace::messages.my_resources')</span>
+                    <span class="badge rounded-pill {{ $mine ? 'bg-light text-dark' : 'bg-secondary' }}">{{ $myResourcesCount }}</span>
+                </a>
+            @endif
             @foreach($categories as $item)
                 <a href="{{ route('marketplace.categories.show', ['category' => $item, 'sort' => $sort]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 @if(isset($category) && $category->is($item)) active @endif">
                     <span><i class="{{ $item->icon }} me-2"></i>{{ $item->name }}</span>
@@ -25,7 +31,7 @@
         </div></aside>
 
         <main class="col-lg-9">
-            <form class="mb-4"><div class="input-group"><input class="form-control" name="search" value="{{ request('search') }}" placeholder="@lang('marketplace::messages.search')"><select class="form-select" name="sort" aria-label="@lang('marketplace::messages.sort.label')" style="max-width: 16rem;"><option value="updated" @selected($sort === 'updated')>@lang('marketplace::messages.sort.updated')</option><option value="downloads" @selected($sort === 'downloads')>@lang('marketplace::messages.sort.downloads')</option><option value="rating" @selected($sort === 'rating')>@lang('marketplace::messages.sort.rating')</option></select><button class="btn btn-outline-primary">@lang('marketplace::messages.sort.apply')</button></div></form>
+            <form class="mb-4">@if($mine)<input type="hidden" name="mine" value="1">@endif<div class="input-group"><input class="form-control" name="search" value="{{ request('search') }}" placeholder="@lang('marketplace::messages.search')"><select class="form-select" name="sort" aria-label="@lang('marketplace::messages.sort.label')" style="max-width: 16rem;"><option value="updated" @selected($sort === 'updated')>@lang('marketplace::messages.sort.updated')</option><option value="downloads" @selected($sort === 'downloads')>@lang('marketplace::messages.sort.downloads')</option><option value="rating" @selected($sort === 'rating')>@lang('marketplace::messages.sort.rating')</option></select><button class="btn btn-outline-primary">@lang('marketplace::messages.sort.apply')</button></div></form>
             <div class="row g-3">
                 @forelse($resources as $resource)
                     <div class="col-md-6"><div class="card h-100">
@@ -34,7 +40,7 @@
                         <div class="d-flex justify-content-between gap-2">
                             <div>
                                 <span class="badge bg-secondary">{{ $resource->category->name }}</span>
-                                @if($canModerate)
+                                @if($canModerate || $mine)
                                     <span class="badge bg-{{ $resource->status === 'published' ? 'success' : ($resource->status === 'pending' ? 'warning text-dark' : 'danger') }}">@lang('marketplace::messages.status_labels.'.$resource->status)</span>
                                 @endif
                                 @if($resource->isPaused())<span class="badge bg-warning text-dark">@lang('marketplace::messages.paused')</span>@endif

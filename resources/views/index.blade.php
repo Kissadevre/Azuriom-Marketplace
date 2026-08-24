@@ -16,7 +16,13 @@
             </h1>
             <p class="text-muted mb-0">@lang('marketplace::messages.subtitle')</p>
         </div>
-        @auth<a class="btn btn-primary" href="{{ route('marketplace.resources.create') }}"><i class="bi bi-plus-lg"></i> @lang('marketplace::messages.submit')</a>@endauth
+        @auth
+            @if(setting('marketplace.pause_submissions', false))
+                <button class="btn btn-secondary" type="button" disabled title="@lang('marketplace::messages.submissions_paused')"><i class="bi bi-pause-circle"></i> @lang('marketplace::messages.submissions_paused_action')</button>
+            @else
+                <a class="btn btn-primary" href="{{ route('marketplace.resources.create') }}"><i class="bi bi-plus-lg"></i> @lang('marketplace::messages.submit')</a>
+            @endif
+        @endauth
     </div>
 
     <div class="row">

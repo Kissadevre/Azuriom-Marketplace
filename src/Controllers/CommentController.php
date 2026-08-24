@@ -12,6 +12,12 @@ class CommentController extends Controller
 {
     public function store(Request $request, Resource $resource)
     {
+        abort_if(
+            setting('marketplace.pause_comments', false),
+            403,
+            trans('marketplace::messages.comments_paused')
+        );
+
         abort_unless(
             $resource->status === 'published'
             && ! $resource->isPaused()

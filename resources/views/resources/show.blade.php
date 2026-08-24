@@ -78,11 +78,15 @@
                     <div class="card mb-4"><div class="card-body"><p class="lead">{{ $resource->summary }}</p><div class="marketplace-resource-content">{!! $resource->description !!}</div></div></div>
 
                     <h2 class="h4">@lang('marketplace::messages.comments')</h2>
+                    @if(setting('marketplace.pause_comments', false))
+                        <div class="alert alert-warning"><i class="bi bi-chat-square-x me-2" aria-hidden="true"></i>@lang('marketplace::messages.comments_paused')</div>
+                    @else
                     @auth
                         @if(! $resource->isPaused() && $resource->isUnlockedBy(auth()->user()) && $resource->status === 'published')
                             <form method="POST" action="{{ route('marketplace.comments.store', $resource) }}" class="mb-4">@csrf<textarea name="content" class="form-control mb-2" rows="3" maxlength="5000" required></textarea><button class="btn btn-primary">@lang('marketplace::messages.comment')</button></form>
                         @endif
                     @endauth
+                    @endif
 
                     @forelse($resource->comments as $comment)
                         <div class="card mb-2"><div class="card-body"><div class="d-flex justify-content-between gap-2"><div><strong>{{ $comment->user->name }}</strong><small class="text-muted ms-2">{{ format_date($comment->created_at, true) }}</small></div>

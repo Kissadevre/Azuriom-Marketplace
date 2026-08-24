@@ -27,6 +27,8 @@ class SettingsController extends Controller
 
         Setting::updateSettings([
             'marketplace.moderation' => $request->boolean('moderation'),
+            'marketplace.pause_submissions' => $request->boolean('pause_submissions'),
+            'marketplace.pause_comments' => $request->boolean('pause_comments'),
             'marketplace.max_file_size' => $data['max_file_size'],
         ]);
 

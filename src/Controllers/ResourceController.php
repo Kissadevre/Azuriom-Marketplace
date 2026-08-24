@@ -57,11 +57,23 @@ class ResourceController extends Controller
 
     public function create(Request $request)
     {
+        abort_if(
+            setting('marketplace.pause_submissions', false),
+            403,
+            trans('marketplace::messages.submissions_paused')
+        );
+
         return view('marketplace::resources.create', ['categories' => $this->categories($request)]);
     }
 
     public function store(ResourceRequest $request)
     {
+        abort_if(
+            setting('marketplace.pause_submissions', false),
+            403,
+            trans('marketplace::messages.submissions_paused')
+        );
+
         abort_unless(
             Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
             403

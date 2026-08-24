@@ -22,10 +22,10 @@ return new class extends Migration
 
         Schema::create('marketplace_resources', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('category_id')->constrained('marketplace_categories')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('slug')->unique();
             $table->string('version')->nullable();
             $table->text('summary');
             $table->longText('description');

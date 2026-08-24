@@ -12,7 +12,6 @@ use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ResourceController extends Controller
@@ -69,7 +68,6 @@ class ResourceController extends Controller
         );
         $data = $this->payload($request);
         $data['user_id'] = $request->user()->id;
-        $data['slug'] = $this->uniqueSlug($data['name']);
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published' ? now() : null;
         $resource = Resource::create($data);
@@ -198,13 +196,6 @@ class ResourceController extends Controller
         else { if ($resource?->file_path) Storage::disk('local')->delete($resource->file_path); $data['file_path'] = null; }
         return $data;
     }
-    private function uniqueSlug(string $name): string
-    {
-        $base = Str::slug($name) ?: 'resource'; $slug = $base; $i = 2;
-        while (Resource::where('slug', $slug)->exists()) $slug = $base.'-'.$i++;
-        return $slug;
-    }
-
     private function requiresModeration(Request $request): bool
     {
         return (bool) setting('marketplace.moderation', true)

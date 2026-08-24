@@ -34,7 +34,7 @@ class ResourceController extends Controller
         abort_unless(Category::findOrFail($data['category_id'])->canAccess($request->user()), 403);
         $data['user_id'] = $request->user()->id;
         $data['slug'] = $this->uniqueSlug($data['name']);
-        $data['status'] = setting('marketplace.moderation', true) ? 'pending' : 'published';
+        $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published' ? now() : null;
         $resource = Resource::create($data);
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
@@ -51,7 +51,10 @@ class ResourceController extends Controller
         abort_unless($resource->isOwnedBy($request->user()), 403);
         $data = $this->payload($request, $resource);
         abort_unless(Category::findOrFail($data['category_id'])->canAccess($request->user()), 403);
-        if (setting('marketplace.moderation', true)) { $data['status'] = 'pending'; $data['published_at'] = null; }
+        $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
+        $data['published_at'] = $data['status'] === 'published'
+            ? ($resource->published_at ?? now())
+            : null;
         $resource->update($data);
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
@@ -134,6 +137,12 @@ class ResourceController extends Controller
         $base = Str::slug($name) ?: 'resource'; $slug = $base; $i = 2;
         while (Resource::where('slug', $slug)->exists()) $slug = $base.'-'.$i++;
         return $slug;
+    }
+
+    private function requiresModeration(Request $request): bool
+    {
+        return (bool) setting('marketplace.moderation', true)
+            && ! $request->user()->can('marketplace.bypass-moderation');
     }
 
     /**

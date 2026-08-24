@@ -20,6 +20,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
         Permission::registerPermissions([
             'marketplace.admin' => 'marketplace::admin.permissions.admin',
             'marketplace.moderate' => 'marketplace::admin.permissions.moderate',
+            'marketplace.bypass-moderation' => 'marketplace::admin.permissions.bypass_moderation',
         ]);
 
         Relation::morphMap(['marketplace.resources' => Resource::class]);

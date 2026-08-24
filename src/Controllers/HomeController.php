@@ -41,7 +41,8 @@ class HomeController extends Controller
         $sort = $this->sort($request);
         abort_unless($category->is_enabled && ($canModerate || $category->canAccess($request->user())), 403);
 
-        $query = $category->resources()
+        $query = Resource::query()
+            ->where('category_id', $category->id)
             ->when(! $canModerate, fn (Builder $query) => $query->published())
             ->with(['author', 'latestUpdate'])
             ->withAvg('ratings', 'rating');

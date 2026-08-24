@@ -7,8 +7,35 @@
 @if(isset($resource) && $resource->banner_path)
 <div class="card mb-3" style="max-width: 32rem;"><img src="{{ route('marketplace.resources.banner', $resource) }}" class="card-img-top" style="max-height: 240px; object-fit: cover;" alt="{{ $resource->name }}"><div class="card-body py-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="remove_banner" value="1" id="removeBanner"><label class="form-check-label" for="removeBanner">@lang('marketplace::messages.banner.remove')</label></div></div></div>
 @endif
-<div class="row"><div class="col-md-6 mb-3"><label class="form-label">@lang('marketplace::messages.fields.delivery')</label><select id="deliveryType" name="delivery_type" class="form-select"><option value="file" @selected(old('delivery_type',$resource->delivery_type??'file')==='file')>@lang('marketplace::messages.file')</option><option value="external" @selected(old('delivery_type',$resource->delivery_type??'')==='external')>@lang('marketplace::messages.external')</option></select></div><div class="col-md-6 mb-3"><label class="form-label">@lang('marketplace::messages.fields.price')</label><input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price',$resource->price??0) }}" required></div></div>
-<div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.file')</label><input type="file" name="file" class="form-control"></div><div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.url')</label><input type="url" name="external_url" class="form-control" value="{{ old('external_url',$resource->external_url??'') }}"></div>
+<div class="row"><div class="col-md-6 mb-3"><label class="form-label" for="deliveryType">@lang('marketplace::messages.fields.delivery')</label><select id="deliveryType" name="delivery_type" class="form-select"><option value="file" @selected(old('delivery_type',$resource->delivery_type??'file')==='file')>@lang('marketplace::messages.file')</option><option value="external" @selected(old('delivery_type',$resource->delivery_type??'')==='external')>@lang('marketplace::messages.external')</option></select></div><div class="col-md-6 mb-3"><label class="form-label">@lang('marketplace::messages.fields.price')</label><input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price',$resource->price??0) }}" required></div></div>
+<div id="fileDeliveryGroup" class="mb-3"><label class="form-label" for="resourceFile">@lang('marketplace::messages.fields.file')</label><input id="resourceFile" type="file" name="file" class="form-control"></div>
+<div id="externalDeliveryGroup" class="mb-3"><label class="form-label" for="resourceExternalUrl">@lang('marketplace::messages.fields.url')</label><input id="resourceExternalUrl" type="url" name="external_url" class="form-control" value="{{ old('external_url',$resource->external_url??'') }}"></div>
 @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <button class="btn btn-primary">@lang('messages.actions.save')</button>
+@push('footer-scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deliveryType = document.getElementById('deliveryType');
+        const fileGroup = document.getElementById('fileDeliveryGroup');
+        const fileInput = document.getElementById('resourceFile');
+        const externalGroup = document.getElementById('externalDeliveryGroup');
+        const externalInput = document.getElementById('resourceExternalUrl');
+        const fileIsRequired = {{ isset($resource) && $resource->file_path ? 'false' : 'true' }};
+
+        const updateDeliveryFields = () => {
+            const usesFile = deliveryType.value === 'file';
+
+            fileGroup.hidden = ! usesFile;
+            fileInput.disabled = ! usesFile;
+            fileInput.required = usesFile && fileIsRequired;
+            externalGroup.hidden = usesFile;
+            externalInput.disabled = usesFile;
+            externalInput.required = ! usesFile;
+        };
+
+        deliveryType.addEventListener('change', updateDeliveryFields);
+        updateDeliveryFields();
+    });
+</script>
+@endpush
 @include('marketplace::resources._editor')

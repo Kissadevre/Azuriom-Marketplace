@@ -90,8 +90,23 @@
                         <div class="card mb-2"><div class="card-body"><div class="d-flex justify-content-between gap-2"><div><strong>{{ $comment->user->name }}</strong><small class="text-muted ms-2">{{ format_date($comment->created_at, true) }}</small></div>
                             @auth
                                 @if($comment->user_id === auth()->id() || auth()->user()->can('marketplace.delete-comments'))
-                                    <div class="d-flex gap-1"><form method="POST" action="{{ route('marketplace.comments.destroy', $comment) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_comment')))">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">@lang('marketplace::messages.moderation.delete_comment')</button></form>
-                                    @if(auth()->user()->can('marketplace.delete-comments'))<form method="POST" action="{{ route('marketplace.comments.user.destroy', $comment->user) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_user_comments', ['user' => $comment->user->name])))">@csrf @method('DELETE')<button class="btn btn-sm btn-danger">@lang('marketplace::messages.moderation.delete_user_comments')</button></form>@endif</div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="@lang('marketplace::messages.comment_actions')">
+                                            <i class="bi bi-three-dots-vertical" aria-hidden="true"></i><span class="visually-hidden">@lang('marketplace::messages.comment_actions')</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <form method="POST" action="{{ route('marketplace.comments.destroy', $comment) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_comment')))">
+                                                @csrf @method('DELETE')
+                                                <button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_comment')</button>
+                                            </form>
+                                            @if(auth()->user()->can('marketplace.delete-comments'))
+                                                <form method="POST" action="{{ route('marketplace.comments.user.destroy', $comment->user) }}" onsubmit="return confirm(@js(trans('marketplace::messages.confirm.delete_user_comments', ['user' => $comment->user->name])))">
+                                                    @csrf @method('DELETE')
+                                                    <button class="dropdown-item text-danger" type="submit"><i class="bi bi-person-x me-2" aria-hidden="true"></i>@lang('marketplace::messages.moderation.delete_user_comments')</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
                                 @endif
                             @endauth
                         </div><p class="mb-0 mt-2">{{ $comment->content }}</p></div></div>

@@ -69,10 +69,21 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['resource_id', 'user_id']);
         });
+
+        Schema::create('marketplace_resource_updates', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('version', 30);
+            $table->text('description');
+            $table->timestamps();
+            $table->unique(['resource_id', 'version']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('marketplace_resource_updates');
         Schema::dropIfExists('marketplace_ratings');
         Schema::dropIfExists('marketplace_comments');
         Schema::dropIfExists('marketplace_purchases');

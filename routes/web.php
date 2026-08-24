@@ -5,6 +5,7 @@ use Azuriom\Plugin\Marketplace\Controllers\HomeController;
 use Azuriom\Plugin\Marketplace\Controllers\ModerationController;
 use Azuriom\Plugin\Marketplace\Controllers\RatingController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceController;
+use Azuriom\Plugin\Marketplace\Controllers\ResourceUpdateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
@@ -24,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/resource/{resource}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     Route::post('/resource/{resource}/rating', [RatingController::class, 'store'])->name('ratings.store');
+    Route::post('/resource/{resource}/updates', [ResourceUpdateController::class, 'store'])->name('resources.updates.store');
 
     Route::patch('/resource/{resource}/approve', [ModerationController::class, 'approve'])
         ->middleware('can:marketplace.moderate')->name('resources.approve');

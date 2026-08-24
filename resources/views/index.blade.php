@@ -40,7 +40,8 @@
                         </div>
                         <h2 class="h5 mt-3"><a class="text-decoration-none" href="{{ route('marketplace.resources.show', $resource) }}">{{ $resource->name }}</a></h2>
                         <p>{{ $resource->summary }}</p>
-                        <small class="text-muted">{{ $resource->author->name }} · ★ {{ round($resource->ratings_avg_rating ?? 0, 1) }}</small>
+                        <small class="text-muted d-block">{{ $resource->author->name }} · ★ {{ round($resource->ratings_avg_rating ?? 0, 1) }}</small>
+                        @if($resource->version)<small class="text-muted">v{{ $resource->version }}@if($resource->latestUpdate) · @lang('marketplace::messages.updates.updated') {{ format_date($resource->latestUpdate->created_at) }}@endif</small>@endif
                     </div></div></div>
                 @empty
                     <div class="col"><div class="alert alert-info">@lang('marketplace::messages.empty')</div></div>

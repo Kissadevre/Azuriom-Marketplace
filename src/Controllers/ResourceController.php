@@ -20,7 +20,7 @@ class ResourceController extends Controller
     public function show(Request $request, Resource $resource)
     {
         abort_unless($this->canView($request, $resource), 403);
-        $resource->load(['author', 'category', 'comments.user', 'ratings']);
+        $resource->load(['author', 'category', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
         return view('marketplace::resources.show', compact('resource'));
     }
 

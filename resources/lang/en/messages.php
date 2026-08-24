@@ -11,4 +11,5 @@ return [
  'confirm'=>['archive'=>'Archive this resource? It will be completely hidden, including from its author.','delete_resource'=>'Permanently delete this resource and all its data? This action cannot be undone.','reset_ratings'=>'Reset all ratings for this resource?','delete_comment'=>'Delete this comment?','delete_user_comments'=>'Delete every comment by :user across all resources?'],
  'editor'=>['help'=>'You can use headings, lists, links, external images, tables and other formatting. Unsafe content is removed automatically.'],
  'banner'=>['help'=>'Optional JPG, PNG or WebP image. Maximum 5 MB and 4096 × 4096 pixels.','remove'=>'Remove the current banner'],
+ 'updates'=>['title'=>'Version history','publish'=>'Publish a new version','version'=>'New version','changelog'=>'Changes in this version','file'=>'Updated file','url'=>'Updated link','publish_action'=>'Publish update','published'=>'The new version was published successfully.','updated'=>'Updated','last_update'=>'Last update:','by'=>'Published by :user','empty'=>'This resource does not have any updates yet.'],
 ];

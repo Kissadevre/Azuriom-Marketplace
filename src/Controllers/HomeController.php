@@ -16,7 +16,7 @@ class HomeController extends Controller
         $categories = $this->categories($request, $canModerate);
 
         $resources = Resource::query()
-            ->with(['category', 'author'])
+            ->with(['category', 'author', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->when(! $canModerate, fn (Builder $query) => $query
                 ->published()
@@ -40,7 +40,7 @@ class HomeController extends Controller
 
         $resources = $category->resources()
             ->when(! $canModerate, fn (Builder $query) => $query->published())
-            ->with('author')
+            ->with(['author', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->when($canModerate, fn (Builder $query) => $query->latest('updated_at'), fn (Builder $query) => $query->latest('published_at'))
             ->paginate(12);

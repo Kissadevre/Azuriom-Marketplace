@@ -75,6 +75,62 @@
                 <div class="marketplace-resource-content">{!! $resource->description !!}</div>
             </div></div>
 
+            <section id="updates" class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h4 mb-0">@lang('marketplace::messages.updates.title')</h2>
+                    @if($resource->latestUpdate)<small class="text-muted">@lang('marketplace::messages.updates.last_update') {{ format_date($resource->latestUpdate->created_at, true) }}</small>@endif
+                </div>
+
+                @auth
+                    @if($resource->isOwnedBy(auth()->user()) || auth()->user()->can('marketplace.edit'))
+                        <div class="card border-primary mb-4">
+                            <div class="card-header">@lang('marketplace::messages.updates.publish')</div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ route('marketplace.resources.updates.store', $resource) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label" for="updateVersion">@lang('marketplace::messages.updates.version')</label>
+                                        <input id="updateVersion" name="version" class="form-control @error('version') is-invalid @enderror" value="{{ old('version') }}" maxlength="30" required placeholder="{{ $resource->version ? 'v'.$resource->version.' →' : '1.0.0' }}">
+                                        @error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="updateDescription">@lang('marketplace::messages.updates.changelog')</label>
+                                        <textarea id="updateDescription" name="description" class="form-control @error('description') is-invalid @enderror" rows="5" maxlength="10000" required>{{ old('description') }}</textarea>
+                                        @error('description')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                    </div>
+                                    @if($resource->delivery_type === 'file')
+                                        <div class="mb-3">
+                                            <label class="form-label" for="updateFile">@lang('marketplace::messages.updates.file')</label>
+                                            <input id="updateFile" type="file" name="file" class="form-control @error('file') is-invalid @enderror" required>
+                                            @error('file')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                        </div>
+                                    @else
+                                        <div class="mb-3">
+                                            <label class="form-label" for="updateUrl">@lang('marketplace::messages.updates.url')</label>
+                                            <input id="updateUrl" type="url" name="external_url" class="form-control @error('external_url') is-invalid @enderror" value="{{ old('external_url', $resource->external_url) }}" required>
+                                            @error('external_url')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                        </div>
+                                    @endif
+                                    <button class="btn btn-primary"><i class="bi bi-cloud-arrow-up me-1"></i>@lang('marketplace::messages.updates.publish_action')</button>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+                @endauth
+
+                @forelse($resource->updates as $update)
+                    <article class="card mb-3"><div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div><h3 class="h5 mb-1">v{{ $update->version }}</h3><small class="text-muted">@lang('marketplace::messages.updates.by', ['user' => $update->author->name])</small></div>
+                            <time class="text-muted" datetime="{{ $update->created_at->toIso8601String() }}">{{ format_date($update->created_at, true) }}</time>
+                        </div>
+                        <div class="mt-3" style="white-space: pre-wrap">{{ $update->description }}</div>
+                    </div></article>
+                @empty
+                    <p class="text-muted">@lang('marketplace::messages.updates.empty')</p>
+                @endforelse
+            </section>
+
             <h2 class="h4">@lang('marketplace::messages.comments')</h2>
             @auth
                 @if(! $resource->isPaused() && $resource->isUnlockedBy(auth()->user()) && $resource->status === 'published')

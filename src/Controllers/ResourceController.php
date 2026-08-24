@@ -8,6 +8,7 @@ use Azuriom\Plugin\Marketplace\Models\Category;
 use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
+use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -138,6 +139,16 @@ class ResourceController extends Controller
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
         $data = $request->safe()->except('file');
+        $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
+
+        if ($data['description'] === '') {
+            throw ValidationException::withMessages([
+                'description' => trans('validation.required', [
+                    'attribute' => trans('marketplace::messages.fields.description'),
+                ]),
+            ]);
+        }
+
         if ($request->hasFile('file')) {
             if ($resource?->file_path) Storage::disk('local')->delete($resource->file_path);
             $data['file_path'] = $request->file('file')->store('marketplace/resources', 'local');

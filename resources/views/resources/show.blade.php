@@ -2,6 +2,15 @@
 
 @section('title', $resource->name)
 
+@push('styles')
+<style>
+    .marketplace-resource-content img { max-width: 100%; height: auto; }
+    .marketplace-resource-content table { width: 100%; margin-bottom: 1rem; border-collapse: collapse; }
+    .marketplace-resource-content th, .marketplace-resource-content td { padding: .5rem; border: 1px solid var(--bs-border-color); }
+    .marketplace-resource-content pre { padding: 1rem; overflow: auto; border-radius: .375rem; background: var(--bs-tertiary-bg); }
+</style>
+@endpush
+
 @section('content')
 <div class="container content">
     <div class="row">
@@ -63,7 +72,7 @@
 
             <div class="card mb-4"><div class="card-body">
                 <p class="lead">{{ $resource->summary }}</p>
-                <div style="white-space: pre-wrap">{{ $resource->description }}</div>
+                <div class="marketplace-resource-content">{!! $resource->description !!}</div>
             </div></div>
 
             <h2 class="h4">@lang('marketplace::messages.comments')</h2>

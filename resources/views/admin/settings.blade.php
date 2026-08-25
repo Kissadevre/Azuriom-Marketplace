@@ -71,22 +71,22 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="rateLimitPublish">@lang('marketplace::admin.rate_limits.publish')</label>
-                    <div class="input-group"><input id="rateLimitPublish" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" data-integer-only name="rate_limit_publish" class="form-control @error('rate_limit_publish') is-invalid @enderror" value="{{ old('rate_limit_publish', setting('marketplace.rate_limit_publish', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_publish')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <div class="input-group"><input id="rateLimitPublish" type="number" inputmode="numeric" min="0" max="86400" step="1" data-integer-only name="rate_limit_publish" class="form-control @error('rate_limit_publish') is-invalid @enderror" value="{{ old('rate_limit_publish', setting('marketplace.rate_limit_publish', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_publish')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                     <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.publish_help')</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="rateLimitEdit">@lang('marketplace::admin.rate_limits.edit')</label>
-                    <div class="input-group"><input id="rateLimitEdit" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" data-integer-only name="rate_limit_edit" class="form-control @error('rate_limit_edit') is-invalid @enderror" value="{{ old('rate_limit_edit', setting('marketplace.rate_limit_edit', 60)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_edit')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <div class="input-group"><input id="rateLimitEdit" type="number" inputmode="numeric" min="0" max="86400" step="1" data-integer-only name="rate_limit_edit" class="form-control @error('rate_limit_edit') is-invalid @enderror" value="{{ old('rate_limit_edit', setting('marketplace.rate_limit_edit', 60)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_edit')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                     <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.edit_help')</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="rateLimitUpdate">@lang('marketplace::admin.rate_limits.update')</label>
-                    <div class="input-group"><input id="rateLimitUpdate" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" data-integer-only name="rate_limit_update" class="form-control @error('rate_limit_update') is-invalid @enderror" value="{{ old('rate_limit_update', setting('marketplace.rate_limit_update', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_update')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <div class="input-group"><input id="rateLimitUpdate" type="number" inputmode="numeric" min="0" max="86400" step="1" data-integer-only name="rate_limit_update" class="form-control @error('rate_limit_update') is-invalid @enderror" value="{{ old('rate_limit_update', setting('marketplace.rate_limit_update', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_update')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                     <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.update_help')</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="rateLimitComment">@lang('marketplace::admin.rate_limits.comment')</label>
-                    <div class="input-group"><input id="rateLimitComment" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" data-integer-only name="rate_limit_comment" class="form-control @error('rate_limit_comment') is-invalid @enderror" value="{{ old('rate_limit_comment', setting('marketplace.rate_limit_comment', 15)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_comment')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <div class="input-group"><input id="rateLimitComment" type="number" inputmode="numeric" min="0" max="86400" step="1" data-integer-only name="rate_limit_comment" class="form-control @error('rate_limit_comment') is-invalid @enderror" value="{{ old('rate_limit_comment', setting('marketplace.rate_limit_comment', 15)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_comment')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                     <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.comment_help')</small>
                 </div>
             </div>
@@ -99,19 +99,19 @@
         <div class="card-body">
             <div class="mb-4">
                 <label class="form-label fw-semibold" for="maxFileSize">@lang('marketplace::admin.settings.max_file_size')</label>
-                <div class="input-group" style="max-width: 32rem;"><input id="maxFileSize" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="7" data-integer-only name="max_file_size" class="form-control @error('max_file_size') is-invalid @enderror" value="{{ old('max_file_size', setting('marketplace.max_file_size', 51200)) }}" required><span class="input-group-text">KB</span>@error('max_file_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                <div class="input-group" style="max-width: 32rem;"><input id="maxFileSize" type="number" inputmode="numeric" min="1" max="1048576" step="1" data-integer-only name="max_file_size" class="form-control @error('max_file_size') is-invalid @enderror" value="{{ old('max_file_size', setting('marketplace.max_file_size', 51200)) }}" required><span class="input-group-text">KB</span>@error('max_file_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                 <small class="form-text text-muted">@lang('marketplace::admin.settings.max_file_size_help')</small>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="maxEditorImageSize">@lang('marketplace::admin.settings.max_editor_image_size')</label>
-                    <div class="input-group"><input id="maxEditorImageSize" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" data-integer-only name="max_editor_image_size" class="form-control @error('max_editor_image_size') is-invalid @enderror" value="{{ old('max_editor_image_size', setting('marketplace.max_editor_image_size', 5120)) }}" required><span class="input-group-text">KB</span>@error('max_editor_image_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <div class="input-group"><input id="maxEditorImageSize" type="number" inputmode="numeric" min="100" max="20480" step="1" data-integer-only name="max_editor_image_size" class="form-control @error('max_editor_image_size') is-invalid @enderror" value="{{ old('max_editor_image_size', setting('marketplace.max_editor_image_size', 5120)) }}" required><span class="input-group-text">KB</span>@error('max_editor_image_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                     <small class="form-text text-muted">@lang('marketplace::admin.settings.max_editor_image_size_help')</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="maxEditorImages">@lang('marketplace::admin.settings.max_editor_images')</label>
-                    <input id="maxEditorImages" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" data-integer-only name="max_editor_images" class="form-control @error('max_editor_images') is-invalid @enderror" value="{{ old('max_editor_images', setting('marketplace.max_editor_images', 20)) }}" required>
+                    <input id="maxEditorImages" type="number" inputmode="numeric" min="1" max="100" step="1" data-integer-only name="max_editor_images" class="form-control @error('max_editor_images') is-invalid @enderror" value="{{ old('max_editor_images', setting('marketplace.max_editor_images', 20)) }}" required>
                     @error('max_editor_images')<span class="invalid-feedback">{{ $message }}</span>@enderror
                     <small class="form-text text-muted">@lang('marketplace::admin.settings.max_editor_images_help')</small>
                 </div>
@@ -135,11 +135,21 @@
 </form>
 @endsection
 
-@push('scripts')
+@push('footer-scripts')
 <script>
     document.querySelectorAll('[data-integer-only]').forEach((input) => {
-        input.addEventListener('input', () => {
-            input.value = input.value.replace(/[^0-9]/g, '');
+        input.addEventListener('keydown', (event) => {
+            if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('paste', (event) => {
+            const value = event.clipboardData?.getData('text') ?? '';
+
+            if (! /^\d+$/.test(value)) {
+                event.preventDefault();
+            }
         });
     });
 </script>

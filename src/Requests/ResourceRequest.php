@@ -5,6 +5,7 @@ namespace Azuriom\Plugin\Marketplace\Requests;
 use Azuriom\Plugin\Marketplace\Rules\AllowedResourceExtension;
 use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ResourceRequest extends FormRequest
@@ -20,9 +21,9 @@ class ResourceRequest extends FormRequest
             'tags' => ['nullable', 'array', 'max:50'],
             'tags.*' => ['integer', 'distinct', Rule::exists('marketplace_tags', 'id')->where('is_enabled', true)],
             'editor_upload_token' => ['required', 'uuid'],
-            'name' => ['required', 'string', 'max:100'],
-            'version' => ['nullable', 'string', 'max:30'],
-            'summary' => ['required', 'string', 'max:500'],
+            'name' => ['required', 'string', 'max:24', 'regex:/^[\pL\pN ]+$/u'],
+            'version' => ['required', 'string', 'max:8', 'regex:/^[A-Za-z0-9._-]+$/'],
+            'summary' => ['required', 'string', 'max:150', 'regex:/^[\pL\pN ]+$/u'],
             'description' => ['required', 'string', 'max:50000'],
             'banner' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
             'remove_banner' => ['sometimes', 'boolean'],
@@ -30,6 +31,33 @@ class ResourceRequest extends FormRequest
             'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', new AllowedResourceExtension($allowedExtensions), 'max:'.((int) setting('marketplace.max_file_size', 51200))],
             'external_url' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'external'), 'nullable', 'url:http,https', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0', 'max:999999999'],
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => Str::squish(strip_tags((string) $this->input('name', ''))),
+            'summary' => Str::squish(strip_tags((string) $this->input('summary', ''))),
+            'version' => trim(strip_tags((string) $this->input('version', ''))),
+        ]);
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
+            'summary.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
+            'version.regex' => trans('marketplace::messages.validation.version_format'),
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => trans('messages.fields.name'),
+            'summary' => trans('marketplace::messages.fields.summary'),
+            'version' => trans('marketplace::messages.fields.version'),
         ];
     }
 }

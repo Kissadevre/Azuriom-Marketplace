@@ -9,6 +9,7 @@
     .marketplace-tag-option { cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
     .marketplace-tag-option:hover { border-color: rgba(var(--bs-primary-rgb), .45) !important; background: rgba(var(--bs-primary-rgb), .04); }
     .marketplace-banner-preview { width: 100%; aspect-ratio: 16 / 8.5; object-fit: cover; }
+    .marketplace-summary-input { resize: none; }
     .marketplace-editor-card .tox-tinymce { border-color: var(--bs-border-color); border-radius: .65rem; }
     @media (max-width: 991.98px) { .marketplace-form-sidebar { position: static; } }
 </style>
@@ -24,8 +25,8 @@
                 <strong>@lang('marketplace::messages.tabs.general')</strong>
             </div>
             <div class="card-body p-4">
-                <div class="mb-4"><label class="form-label fw-semibold">@lang('messages.fields.name')</label><input class="form-control form-control-lg @error('name') is-invalid @enderror" name="name" maxlength="100" value="{{ old('name',$resource->name??'') }}" required>@error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
-                <div class="mb-4"><label class="form-label fw-semibold">@lang('marketplace::messages.fields.summary')</label><textarea class="form-control @error('summary') is-invalid @enderror" name="summary" rows="3" maxlength="500" required>{{ old('summary',$resource->summary??'') }}</textarea>@error('summary')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                <div class="mb-4"><label class="form-label fw-semibold">@lang('messages.fields.name')</label><input class="form-control form-control-lg @error('name') is-invalid @enderror" name="name" maxlength="24" pattern="[\p{L}\p{N} ]+" value="{{ old('name',$resource->name??'') }}" required data-character-counter="nameCounter">@error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="nameCounter">0</span>/24</small></div></div>
+                <div class="mb-4"><label class="form-label fw-semibold">@lang('marketplace::messages.fields.summary')</label><textarea class="marketplace-summary-input form-control @error('summary') is-invalid @enderror" name="summary" rows="3" maxlength="150" required data-character-counter="summaryCounter">{{ old('summary',$resource->summary??'') }}</textarea>@error('summary')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="summaryCounter">0</span>/150</small></div></div>
                 <div><label class="form-label fw-semibold" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control html-editor" rows="14" name="description">{{ old('description',$resource->description??'') }}</textarea><small class="form-text text-muted d-block mt-2"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::messages.editor.help')</small></div>
             </div>
         </div>
@@ -37,7 +38,7 @@
                 <div class="card-header"><strong><i class="bi bi-sliders me-2" aria-hidden="true"></i>@lang('marketplace::messages.fields.category')</strong></div>
                 <div class="card-body">
                     <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.category')</label><select name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
-                    <div><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control" name="version" value="{{ old('version',$resource->version??'') }}"></div>
+                    <div><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control @error('version') is-invalid @enderror" name="version" maxlength="8" pattern="[A-Za-z0-9._-]+" value="{{ old('version',$resource->version??'') }}" required data-character-counter="versionCounter">@error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="versionCounter">0</span>/8</small></div></div>
                 </div>
             </div>
 
@@ -98,6 +99,14 @@
 
         deliveryType.addEventListener('change', updateDeliveryFields);
         updateDeliveryFields();
+
+        document.querySelectorAll('[data-character-counter]').forEach((input) => {
+            const counter = document.getElementById(input.dataset.characterCounter);
+            const updateCounter = () => counter.textContent = input.value.length;
+
+            input.addEventListener('input', updateCounter);
+            updateCounter();
+        });
     });
 </script>
 @endpush

@@ -13,6 +13,10 @@ Route::get('categories/{category}/resources', [CategoryController::class, 'resou
 Route::resource('categories', CategoryController::class)->except('show');
 Route::resource('tags', TagController::class)->except('show');
 Route::get('resources/pending', [ResourceController::class, 'pending'])->name('resources.pending');
+Route::get('resources/archived', [ResourceController::class, 'archived'])
+    ->middleware('can:marketplace.archive')->name('resources.archived');
+Route::patch('resources/archived/{resourceUuid}/restore', [ResourceController::class, 'restore'])
+    ->middleware('can:marketplace.archive')->name('resources.archived.restore');
 Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 Route::get('restrictions', [RestrictionController::class, 'index'])->name('restrictions.index');
 Route::post('restrictions', [RestrictionController::class, 'store'])->name('restrictions.store');

@@ -75,6 +75,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Moderation tools are available directly from the resource page through a compact dropdown.
 - Destructive and state-changing moderation actions require modal confirmation.
 - Resources can be paused, archived, edited, permanently deleted, approved, or rejected.
+- Authorized staff can review archived resources from the administration panel and restore them to their previous status.
 - Paused resources cannot be downloaded, purchased, commented on, or rated.
 - Archived resources are hidden through a global scope while their data remains stored.
 - Moderators can delete individual comments, delete every comment by a user, and reset a resource's ratings.
@@ -87,6 +88,7 @@ The Marketplace administration menu contains dedicated pages for:
 - Categories
 - Tags
 - Pending resources
+- Archived resources (requires the archive permission)
 - Community reports
 - User restrictions
 - Settings and marketplace statistics

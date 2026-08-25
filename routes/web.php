@@ -21,18 +21,18 @@ Route::get('/editor-images/{resourceImage:uuid}', [ResourceEditorImageController
 Route::middleware('auth')->group(function () {
     Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
     Route::get('/submit', [ResourceController::class, 'create'])->name('resources.create');
-    Route::post('/submit', [ResourceController::class, 'store'])->middleware('throttle:marketplace.publish')->name('resources.store');
+    Route::post('/submit', [ResourceController::class, 'store'])->middleware(['throttle:marketplace.publish', 'captcha'])->name('resources.store');
     Route::get('/resource/{resource:uuid}/edit', [ResourceController::class, 'edit'])->name('resources.edit');
-    Route::put('/resource/{resource:uuid}', [ResourceController::class, 'update'])->middleware('throttle:marketplace.edit')->name('resources.update');
+    Route::put('/resource/{resource:uuid}', [ResourceController::class, 'update'])->middleware(['throttle:marketplace.edit', 'captcha'])->name('resources.update');
     Route::delete('/resource/{resource:uuid}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::post('/resource/{resource:uuid}/purchase', [ResourceController::class, 'purchase'])->name('resources.purchase');
-    Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->middleware('throttle:marketplace.comment')->name('comments.store');
+    Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->middleware(['throttle:marketplace.comment', 'captcha'])->name('comments.store');
     Route::post('/comments/{comment}/like', [CommentController::class, 'toggleLike'])->name('comments.likes.toggle');
     Route::post('/resource/{resource:uuid}/report', [ReportController::class, 'resource'])->name('resources.report');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     Route::post('/comments/{comment}/report', [ReportController::class, 'comment'])->name('comments.report');
     Route::post('/resource/{resource:uuid}/rating', [RatingController::class, 'store'])->name('ratings.store');
-    Route::post('/resource/{resource:uuid}/updates', [ResourceUpdateController::class, 'store'])->middleware('throttle:marketplace.update')->name('resources.updates.store');
+    Route::post('/resource/{resource:uuid}/updates', [ResourceUpdateController::class, 'store'])->middleware(['throttle:marketplace.update', 'captcha'])->name('resources.updates.store');
     Route::post('/editor-images', [ResourceEditorImageController::class, 'store'])
         ->middleware('throttle:30,1')->name('editor-images.store');
 

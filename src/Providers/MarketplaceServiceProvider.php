@@ -105,6 +105,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
                     'marketplace.admin.tags.index' => trans('marketplace::admin.tags.title'),
                     'marketplace.admin.resources.pending' => trans('marketplace::admin.pending_resources.title'),
                     'marketplace.admin.reports.index' => trans('marketplace::admin.reports.title'),
+                    'marketplace.admin.restrictions.index' => trans('marketplace::admin.restrictions.title'),
                     'marketplace.admin.settings.edit' => trans('marketplace::admin.settings.title'),
                 ],
             ],

@@ -132,10 +132,24 @@ return new class extends Migration
             $table->index(['reportable_type', 'reportable_id']);
             $table->unique(['user_id', 'reportable_type', 'reportable_id']);
         });
+
+        Schema::create('marketplace_restrictions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('lifted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->json('actions');
+            $table->text('reason')->nullable();
+            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamp('lifted_at')->nullable()->index();
+            $table->timestamps();
+            $table->index(['user_id', 'lifted_at']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('marketplace_restrictions');
         Schema::dropIfExists('marketplace_reports');
         Schema::dropIfExists('marketplace_resource_updates');
         Schema::dropIfExists('marketplace_ratings');

@@ -63,6 +63,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Users can report resources or comments and provide a reason in a confirmation modal.
 - Duplicate reports from the same user for the same content are prevented.
 - Administrators can review resource and comment reports from a dedicated panel page.
+- Users can be restricted from comments, new resources, resource edits, or version updates for a fixed period or indefinitely.
 
 ### Moderation
 
@@ -87,6 +88,7 @@ The Marketplace administration menu contains dedicated pages for:
 - Tags
 - Pending resources
 - Community reports
+- User restrictions
 - Settings and marketplace statistics
 
 The settings dashboard shows published resources, resources awaiting approval, and total coins spent on resource purchases. Administrators can also:
@@ -98,6 +100,7 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Configure the maximum resource file size.
 - Configure the resource file extension whitelist.
 - Configure TinyMCE image size and per-resource image limits.
+- Apply, review, and lift per-user action restrictions with an optional expiration date and internal reason.
 
 ## Permissions
 
@@ -156,6 +159,7 @@ Do not use this reset workflow on a production installation containing Marketpla
 - File extension checks are enforced server-side for resource creation, editing, and version updates; the browser file filter is only an additional usability aid.
 - The permanent dangerous-extension denylist is enforced independently of the saved administrator whitelist.
 - Paid unlocks use database transactions and row locks to reduce double-purchase and balance-race risks.
+- User restrictions are enforced by route middleware before rate-limit and CAPTCHA validation.
 
 ## Localization
 

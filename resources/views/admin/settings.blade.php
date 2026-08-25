@@ -65,6 +65,36 @@
     </div>
 
     <div class="card mb-4">
+        <div class="card-header"><strong><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>@lang('marketplace::admin.rate_limits.title')</strong></div>
+        <div class="card-body">
+            <p class="text-muted">@lang('marketplace::admin.rate_limits.help')</p>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="rateLimitPublish">@lang('marketplace::admin.rate_limits.publish')</label>
+                    <div class="input-group"><input id="rateLimitPublish" type="number" min="0" max="86400" step="1" name="rate_limit_publish" class="form-control @error('rate_limit_publish') is-invalid @enderror" value="{{ old('rate_limit_publish', setting('marketplace.rate_limit_publish', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_publish')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.publish_help')</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="rateLimitEdit">@lang('marketplace::admin.rate_limits.edit')</label>
+                    <div class="input-group"><input id="rateLimitEdit" type="number" min="0" max="86400" step="1" name="rate_limit_edit" class="form-control @error('rate_limit_edit') is-invalid @enderror" value="{{ old('rate_limit_edit', setting('marketplace.rate_limit_edit', 60)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_edit')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.edit_help')</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="rateLimitUpdate">@lang('marketplace::admin.rate_limits.update')</label>
+                    <div class="input-group"><input id="rateLimitUpdate" type="number" min="0" max="86400" step="1" name="rate_limit_update" class="form-control @error('rate_limit_update') is-invalid @enderror" value="{{ old('rate_limit_update', setting('marketplace.rate_limit_update', 300)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_update')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.update_help')</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="rateLimitComment">@lang('marketplace::admin.rate_limits.comment')</label>
+                    <div class="input-group"><input id="rateLimitComment" type="number" min="0" max="86400" step="1" name="rate_limit_comment" class="form-control @error('rate_limit_comment') is-invalid @enderror" value="{{ old('rate_limit_comment', setting('marketplace.rate_limit_comment', 15)) }}" required><span class="input-group-text">@lang('marketplace::admin.rate_limits.seconds')</span>@error('rate_limit_comment')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <small class="form-text text-muted">@lang('marketplace::admin.rate_limits.comment_help')</small>
+                </div>
+            </div>
+            <div class="alert alert-info mt-4 mb-0"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>@lang('marketplace::admin.rate_limits.disabled_help')</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
         <div class="card-header"><strong>@lang('marketplace::admin.settings.files')</strong></div>
         <div class="card-body">
             <div class="mb-4">

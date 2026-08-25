@@ -28,6 +28,10 @@ class SettingsController extends Controller
             'max_file_size' => ['required', 'integer', 'min:1', 'max:1048576'],
             'max_editor_image_size' => ['required', 'integer', 'min:100', 'max:20480'],
             'max_editor_images' => ['required', 'integer', 'min:1', 'max:100'],
+            'rate_limit_publish' => ['required', 'integer', 'min:0', 'max:86400'],
+            'rate_limit_edit' => ['required', 'integer', 'min:0', 'max:86400'],
+            'rate_limit_update' => ['required', 'integer', 'min:0', 'max:86400'],
+            'rate_limit_comment' => ['required', 'integer', 'min:0', 'max:86400'],
             'allowed_extensions' => [
                 'required',
                 'string',
@@ -64,6 +68,10 @@ class SettingsController extends Controller
             'marketplace.max_file_size' => $data['max_file_size'],
             'marketplace.max_editor_image_size' => $data['max_editor_image_size'],
             'marketplace.max_editor_images' => $data['max_editor_images'],
+            'marketplace.rate_limit_publish' => $data['rate_limit_publish'],
+            'marketplace.rate_limit_edit' => $data['rate_limit_edit'],
+            'marketplace.rate_limit_update' => $data['rate_limit_update'],
+            'marketplace.rate_limit_comment' => $data['rate_limit_comment'],
             'marketplace.allowed_extensions' => implode(',', $allowedExtensions),
         ]);
 

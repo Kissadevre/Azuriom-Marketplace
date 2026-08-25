@@ -8,7 +8,10 @@ use Azuriom\Plugin\Marketplace\Commands\CleanupEditorImages;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class MarketplaceServiceProvider extends BasePluginServiceProvider
 {
@@ -19,6 +22,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
         $this->loadMigrations();
         $this->registerRouteDescriptions();
         $this->registerAdminNavigation();
+        $this->registerMarketplaceRateLimiters();
 
         $this->commands(CleanupEditorImages::class);
         if (method_exists($this, 'registerSchedule')) {
@@ -52,6 +56,39 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('marketplace:cleanup-editor-images')->daily();
+    }
+
+    protected function registerMarketplaceRateLimiters(): void
+    {
+        $limits = [
+            'publish' => ['setting' => 'marketplace.rate_limit_publish', 'default' => 300],
+            'edit' => ['setting' => 'marketplace.rate_limit_edit', 'default' => 60],
+            'update' => ['setting' => 'marketplace.rate_limit_update', 'default' => 300],
+            'comment' => ['setting' => 'marketplace.rate_limit_comment', 'default' => 15],
+        ];
+
+        foreach ($limits as $name => $configuration) {
+            RateLimiter::for('marketplace.'.$name, function (Request $request) use ($configuration) {
+                $seconds = max(0, min(86400, (int) setting(
+                    $configuration['setting'],
+                    $configuration['default']
+                )));
+
+                if ($seconds === 0) {
+                    return Limit::none();
+                }
+
+                return Limit::perSecond(1, $seconds)
+                    ->by($request->user()->getAuthIdentifier().':'.$seconds)
+                    ->response(function (Request $request, array $headers) use ($seconds) {
+                        return back()
+                            ->with('error', trans('marketplace::messages.rate_limit', [
+                                'seconds' => $headers['Retry-After'] ?? $seconds,
+                            ]))
+                            ->withHeaders($headers);
+                    });
+            });
+        }
     }
 
     protected function adminNavigation(): array

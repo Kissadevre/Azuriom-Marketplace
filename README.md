@@ -109,9 +109,10 @@ The settings dashboard shows published resources, resources awaiting approval, a
 | Permission | Description |
 | --- | --- |
 | `marketplace.admin` | Access the Marketplace administration pages. |
+| `marketplace.publish` | Publish new resources in the Marketplace. |
 | `marketplace.moderate` | View moderation states and approve or reject pending resources. |
 | `marketplace.bypass-moderation` | Publish resources without entering the moderation queue. |
-| `marketplace.archive` | Archive resources. |
+| `marketplace.archive` | Archive resources and restore archived resources. |
 | `marketplace.pause` | Pause and resume resources. |
 | `marketplace.edit` | Edit any resource. |
 | `marketplace.delete` | Permanently delete any resource. |

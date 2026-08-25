@@ -37,11 +37,13 @@
                 <p class="text-muted fs-5 mt-3 mb-0">@lang('marketplace::messages.subtitle')</p>
             </div>
             @auth
-                @if(setting('marketplace.pause_submissions', false))
-                    <button class="btn btn-secondary btn-lg" type="button" disabled title="@lang('marketplace::messages.submissions_paused')"><i class="bi bi-pause-circle me-1"></i>@lang('marketplace::messages.submissions_paused_action')</button>
-                @else
-                    <a class="btn btn-primary btn-lg px-4" href="{{ route('marketplace.resources.create') }}"><i class="bi bi-plus-lg me-1"></i>@lang('marketplace::messages.submit')</a>
-                @endif
+                @can('marketplace.publish')
+                    @if(setting('marketplace.pause_submissions', false))
+                        <button class="btn btn-secondary btn-lg" type="button" disabled title="@lang('marketplace::messages.submissions_paused')"><i class="bi bi-pause-circle me-1"></i>@lang('marketplace::messages.submissions_paused_action')</button>
+                    @else
+                        <a class="btn btn-primary btn-lg px-4" href="{{ route('marketplace.resources.create') }}"><i class="bi bi-plus-lg me-1"></i>@lang('marketplace::messages.submit')</a>
+                    @endif
+                @endcan
             @endauth
         </div>
     </section>

@@ -21,8 +21,8 @@ Route::get('/editor-images/{resourceImage:uuid}', [ResourceEditorImageController
 
 Route::middleware('auth')->group(function () {
     Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
-    Route::get('/submit', [ResourceController::class, 'create'])->middleware(EnsureMarketplaceActionAllowed::class.':publish')->name('resources.create');
-    Route::post('/submit', [ResourceController::class, 'store'])->middleware([EnsureMarketplaceActionAllowed::class.':publish', 'throttle:marketplace.publish', 'captcha'])->name('resources.store');
+    Route::get('/submit', [ResourceController::class, 'create'])->middleware(['can:marketplace.publish', EnsureMarketplaceActionAllowed::class.':publish'])->name('resources.create');
+    Route::post('/submit', [ResourceController::class, 'store'])->middleware(['can:marketplace.publish', EnsureMarketplaceActionAllowed::class.':publish', 'throttle:marketplace.publish', 'captcha'])->name('resources.store');
     Route::get('/resource/{resource:uuid}/edit', [ResourceController::class, 'edit'])->middleware(EnsureMarketplaceActionAllowed::class.':edit')->name('resources.edit');
     Route::put('/resource/{resource:uuid}', [ResourceController::class, 'update'])->middleware([EnsureMarketplaceActionAllowed::class.':edit', 'throttle:marketplace.edit', 'captcha'])->name('resources.update');
     Route::delete('/resource/{resource:uuid}', [ResourceController::class, 'destroy'])->name('resources.destroy');

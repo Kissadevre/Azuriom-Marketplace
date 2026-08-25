@@ -31,6 +31,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
 
         Permission::registerPermissions([
             'marketplace.admin' => 'marketplace::admin.permissions.admin',
+            'marketplace.publish' => 'marketplace::admin.permissions.publish',
             'marketplace.moderate' => 'marketplace::admin.permissions.moderate',
             'marketplace.bypass-moderation' => 'marketplace::admin.permissions.bypass_moderation',
             'marketplace.archive' => 'marketplace::admin.permissions.archive',

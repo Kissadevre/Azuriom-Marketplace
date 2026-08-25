@@ -47,12 +47,19 @@
                 </label>
                 <div class="form-check form-switch fs-4 mb-0"><input class="form-check-input" type="checkbox" name="pause_submissions" value="1" id="pauseSubmissions" @checked(setting('marketplace.pause_submissions', false))></div>
             </div>
-            <div class="d-flex align-items-center justify-content-between gap-4 p-4">
+            <div class="d-flex align-items-center justify-content-between gap-4 p-4 border-bottom">
                 <label for="pauseComments" class="mb-0">
                     <span class="d-block fw-semibold">@lang('marketplace::admin.settings.pause_comments')</span>
                     <small class="text-muted">@lang('marketplace::admin.settings.pause_comments_help')</small>
                 </label>
                 <div class="form-check form-switch fs-4 mb-0"><input class="form-check-input" type="checkbox" name="pause_comments" value="1" id="pauseComments" @checked(setting('marketplace.pause_comments', false))></div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between gap-4 p-4">
+                <label for="requireLoginForFreeDownloads" class="mb-0">
+                    <span class="d-block fw-semibold">@lang('marketplace::admin.settings.require_login_for_free_downloads')</span>
+                    <small class="text-muted">@lang('marketplace::admin.settings.require_login_for_free_downloads_help')</small>
+                </label>
+                <div class="form-check form-switch fs-4 mb-0"><input class="form-check-input" type="checkbox" name="require_login_for_free_downloads" value="1" id="requireLoginForFreeDownloads" @checked(setting('marketplace.require_login_for_free_downloads', true))></div>
             </div>
         </div>
     </div>

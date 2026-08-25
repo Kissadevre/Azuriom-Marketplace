@@ -138,6 +138,10 @@ class ResourceController extends Controller
 
     public function download(Request $request, Resource $resource)
     {
+        if ($this->freeDownloadsRequireLogin() && $request->user() === null) {
+            return redirect()->guest(route('login'));
+        }
+
         abort_unless($this->canDownload($request, $resource), 403);
 
         if ($resource->delivery_type === 'external') {
@@ -157,6 +161,10 @@ class ResourceController extends Controller
 
     public function continueExternal(Request $request, Resource $resource)
     {
+        if ($this->freeDownloadsRequireLogin() && $request->user() === null) {
+            return redirect()->guest(route('login'));
+        }
+
         abort_unless(
             $this->canDownload($request, $resource),
             403
@@ -219,8 +227,14 @@ class ResourceController extends Controller
         return $resource->status === 'published'
             && ! $resource->isPaused()
             && $resource->category->canAccess($request->user())
+            && (! $this->freeDownloadsRequireLogin() || $request->user() !== null)
             && ($resource->isUnlockedBy($request->user())
-                || $request->user()->can('marketplace.download-paid'));
+                || $request->user()?->can('marketplace.download-paid'));
+    }
+
+    private function freeDownloadsRequireLogin(): bool
+    {
+        return (bool) setting('marketplace.require_login_for_free_downloads', true);
     }
 
     private function hasResourceToolPermission(Request $request): bool

@@ -156,7 +156,11 @@
                         @if($resource->isPaused())<button class="btn btn-secondary w-100" disabled>@lang('marketplace::messages.paused')</button>
                         @elseif($resource->status === 'published' && ($resource->isUnlockedBy(auth()->user()) || auth()->user()->can('marketplace.download-paid')))<a class="btn btn-success w-100 mb-3" href="{{ route('marketplace.resources.download', $resource) }}">@lang('marketplace::messages.get_resource')</a>@if($resource->isUnlockedBy(auth()->user()))<form method="POST" action="{{ route('marketplace.ratings.store', $resource) }}">@csrf<div class="input-group"><select name="rating" class="form-select">@for($i = 5; $i >= 1; $i--)<option value="{{ $i }}">{{ $i }} ★</option>@endfor</select><button class="btn btn-outline-primary">@lang('marketplace::messages.rate')</button></div></form>@endif
                         @elseif($resource->status === 'published')<form method="POST" action="{{ route('marketplace.resources.purchase', $resource) }}">@csrf<button class="btn btn-primary w-100">@lang('marketplace::messages.unlock')</button></form>@endif
-                    @else<a href="{{ route('login') }}" class="btn btn-primary w-100">@lang('auth.login')</a>@endauth
+                    @else
+                        @if($resource->isPaused())<button class="btn btn-secondary w-100" disabled>@lang('marketplace::messages.paused')</button>
+                        @elseif($resource->status === 'published' && $resource->price <= 0 && ! setting('marketplace.require_login_for_free_downloads', true))<a class="btn btn-success w-100" href="{{ route('marketplace.resources.download', $resource) }}">@lang('marketplace::messages.get_resource')</a>
+                        @else<a href="{{ route('login') }}" class="btn btn-primary w-100">@lang('marketplace::messages.login_to_download')</a>@endif
+                    @endauth
                 </div>
             </div>
 

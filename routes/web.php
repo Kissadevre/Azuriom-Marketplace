@@ -13,6 +13,8 @@ Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/category/{category:slug}', [HomeController::class, 'category'])->name('categories.show');
 Route::get('/resource/{resource:uuid}', [ResourceController::class, 'show'])->name('resources.show');
 Route::get('/resource/{resource:uuid}/banner', [ResourceController::class, 'banner'])->name('resources.banner');
+Route::get('/resource/{resource:uuid}/download', [ResourceController::class, 'download'])->name('resources.download');
+Route::post('/resource/{resource:uuid}/external', [ResourceController::class, 'continueExternal'])->name('resources.external');
 
 Route::middleware('auth')->group(function () {
     Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
@@ -22,8 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/resource/{resource:uuid}', [ResourceController::class, 'update'])->name('resources.update');
     Route::delete('/resource/{resource:uuid}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::post('/resource/{resource:uuid}/purchase', [ResourceController::class, 'purchase'])->name('resources.purchase');
-    Route::get('/resource/{resource:uuid}/download', [ResourceController::class, 'download'])->name('resources.download');
-    Route::post('/resource/{resource:uuid}/external', [ResourceController::class, 'continueExternal'])->name('resources.external');
     Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::post('/resource/{resource:uuid}/report', [ReportController::class, 'resource'])->name('resources.report');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');

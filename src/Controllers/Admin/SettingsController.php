@@ -58,6 +58,7 @@ class SettingsController extends Controller
             'marketplace.moderation' => $request->boolean('moderation'),
             'marketplace.pause_submissions' => $request->boolean('pause_submissions'),
             'marketplace.pause_comments' => $request->boolean('pause_comments'),
+            'marketplace.require_login_for_free_downloads' => $request->boolean('require_login_for_free_downloads'),
             'marketplace.max_file_size' => $data['max_file_size'],
             'marketplace.allowed_extensions' => implode(',', $allowedExtensions),
         ]);

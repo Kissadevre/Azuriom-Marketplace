@@ -35,6 +35,7 @@ The plugin includes category access controls, content moderation, reporting tool
 ### Free and paid resources
 
 - Free resources are immediately available to eligible users.
+- Administrators can allow guest downloads for free resources or require users to sign in first.
 - Paid resources are unlocked with the Azuriom site currency.
 - Purchases transfer coins from the buyer to the resource author inside a database transaction.
 - Purchasing a resource unlocks its download, comments, and ratings.
@@ -88,6 +89,7 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Enable or disable publication moderation.
 - Pause new resource submissions without preventing updates to existing resources.
 - Pause new comments globally.
+- Require an account for free-resource downloads or allow guests to download them.
 - Configure the maximum resource file size.
 - Configure the resource file extension whitelist.
 

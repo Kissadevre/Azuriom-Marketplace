@@ -56,5 +56,10 @@ class Resource extends Model
     {
         return $this->price <= 0 || $this->isOwnedBy($user) || ($user !== null && $this->purchases()->where('user_id', $user->id)->exists());
     }
+    public function canInteract(?User $user): bool
+    {
+        return $user !== null
+            && ($this->price <= 0 || $this->purchases()->where('user_id', $user->id)->exists());
+    }
     public function averageRating(): float { return round((float) $this->ratings()->avg('rating'), 1); }
 }

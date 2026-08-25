@@ -14,7 +14,7 @@ class RatingController extends Controller
             $resource->status === 'published'
             && ! $resource->isPaused()
             && $resource->category->canAccess($request->user())
-            && $resource->isUnlockedBy($request->user()),
+            && $resource->canInteract($request->user()),
             403
         );
 

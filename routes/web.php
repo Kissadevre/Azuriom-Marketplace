@@ -6,6 +6,7 @@ use Azuriom\Plugin\Marketplace\Controllers\ModerationController;
 use Azuriom\Plugin\Marketplace\Controllers\RatingController;
 use Azuriom\Plugin\Marketplace\Controllers\ReportController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceController;
+use Azuriom\Plugin\Marketplace\Controllers\ResourceEditorImageController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceUpdateController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,7 @@ Route::get('/resource/{resource:uuid}', [ResourceController::class, 'show'])->na
 Route::get('/resource/{resource:uuid}/banner', [ResourceController::class, 'banner'])->name('resources.banner');
 Route::get('/resource/{resource:uuid}/download', [ResourceController::class, 'download'])->name('resources.download');
 Route::post('/resource/{resource:uuid}/external', [ResourceController::class, 'continueExternal'])->name('resources.external');
+Route::get('/editor-images/{resourceImage:uuid}', [ResourceEditorImageController::class, 'show'])->name('editor-images.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
@@ -30,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/comments/{comment}/report', [ReportController::class, 'comment'])->name('comments.report');
     Route::post('/resource/{resource:uuid}/rating', [RatingController::class, 'store'])->name('ratings.store');
     Route::post('/resource/{resource:uuid}/updates', [ResourceUpdateController::class, 'store'])->name('resources.updates.store');
+    Route::post('/editor-images', [ResourceEditorImageController::class, 'store'])
+        ->middleware('throttle:30,1')->name('editor-images.store');
 
     Route::patch('/resource/{resource:uuid}/approve', [ModerationController::class, 'approve'])
         ->middleware('can:marketplace.moderate')->name('resources.approve');

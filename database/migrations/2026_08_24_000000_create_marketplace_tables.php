@@ -55,6 +55,21 @@ return new class extends Migration
             $table->index(['status', 'published_at']);
         });
 
+        Schema::create('marketplace_resource_images', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('resource_id')->nullable()->constrained('marketplace_resources')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('draft_token')->nullable()->index();
+            $table->string('path');
+            $table->string('mime_type', 20);
+            $table->unsignedBigInteger('size');
+            $table->unsignedInteger('width');
+            $table->unsignedInteger('height');
+            $table->timestamps();
+            $table->index(['user_id', 'resource_id']);
+        });
+
         Schema::create('marketplace_purchases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
@@ -119,6 +134,7 @@ return new class extends Migration
         Schema::dropIfExists('marketplace_comments');
         Schema::dropIfExists('marketplace_resource_tag');
         Schema::dropIfExists('marketplace_purchases');
+        Schema::dropIfExists('marketplace_resource_images');
         Schema::dropIfExists('marketplace_resources');
         Schema::dropIfExists('marketplace_tags');
         Schema::dropIfExists('marketplace_categories');

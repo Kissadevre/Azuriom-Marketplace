@@ -1,4 +1,5 @@
 @csrf
+<input type="hidden" id="editorUploadToken" name="editor_upload_token" value="{{ old('editor_upload_token', $editorUploadToken) }}">
 <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.category')</label><select name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
 <div class="mb-3">
     <label class="form-label">@lang('marketplace::messages.fields.tags')</label>

@@ -10,10 +10,12 @@ use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
 use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
+use Azuriom\Plugin\Marketplace\Support\ResourceEditorImageManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class ResourceController extends Controller
 {
@@ -67,10 +69,11 @@ class ResourceController extends Controller
         return view('marketplace::resources.create', [
             'categories' => $this->categories($request),
             'tags' => $this->tags(),
+            'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
 
-    public function store(ResourceRequest $request)
+    public function store(ResourceRequest $request, ResourceEditorImageManager $imageManager)
     {
         abort_if(
             setting('marketplace.pause_submissions', false),
@@ -86,8 +89,11 @@ class ResourceController extends Controller
         $data['user_id'] = $request->user()->id;
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published' ? now() : null;
+        $draftToken = $request->string('editor_upload_token')->toString();
+        $imageManager->assertWithinLimit(null, $request->user(), $draftToken, $data['description']);
         $resource = Resource::create($data);
         $resource->tags()->sync($request->validated('tags', []));
+        $imageManager->synchronize($resource, $request->user(), $draftToken, $data['description']);
 
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
@@ -101,10 +107,11 @@ class ResourceController extends Controller
             'resource' => $resource,
             'categories' => $this->categories($request),
             'tags' => $this->tags(),
+            'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
 
-    public function update(ResourceRequest $request, Resource $resource)
+    public function update(ResourceRequest $request, Resource $resource, ResourceEditorImageManager $imageManager)
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         abort_unless(
@@ -117,8 +124,11 @@ class ResourceController extends Controller
         $data['published_at'] = $data['status'] === 'published'
             ? ($resource->published_at ?? now())
             : null;
+        $draftToken = $request->string('editor_upload_token')->toString();
+        $imageManager->assertWithinLimit($resource, $request->user(), $draftToken, $data['description']);
         $resource->update($data);
         $resource->tags()->sync($request->validated('tags', []));
+        $imageManager->synchronize($resource, $request->user(), $draftToken, $data['description']);
 
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
@@ -126,7 +136,6 @@ class ResourceController extends Controller
     public function destroy(Request $request, Resource $resource)
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.delete'), 403);
-        Storage::disk('local')->delete(array_filter([$resource->file_path, $resource->banner_path]));
         $resource->delete();
         return to_route('marketplace.index')->with('success', trans('messages.status.success'));
     }
@@ -205,7 +214,7 @@ class ResourceController extends Controller
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags']);
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token']);
         $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
 
         if ($data['description'] === '') {

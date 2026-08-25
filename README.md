@@ -8,6 +8,7 @@ The plugin includes category access controls, content moderation, reporting tool
 
 - Azuriom extension API `1.2.0`
 - PHP `8.2` or newer
+- PHP GD and Fileinfo extensions (EXIF is recommended for JPEG orientation)
 - Laravel `12` through a compatible Azuriom installation
 
 ## Features
@@ -18,6 +19,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Use UUID-based resource URLs, preventing collisions between resources with the same name.
 - Add a title, version, summary, rich description, banner, category, delivery method, and coin price.
 - Rich descriptions powered by TinyMCE and sanitized on the server before storage.
+- Direct JPG, PNG, and WebP uploads from TinyMCE with private storage, server-side re-encoding, access control, and orphan cleanup.
 - Banner images displayed in resource cards and on the resource page.
 - Separate resource information and version-history tabs.
 - Publish new versions with a changelog without editing the resource description.
@@ -95,6 +97,7 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Require an account for free-resource downloads or allow guests to download them.
 - Configure the maximum resource file size.
 - Configure the resource file extension whitelist.
+- Configure TinyMCE image size and per-resource image limits.
 
 ## Permissions
 

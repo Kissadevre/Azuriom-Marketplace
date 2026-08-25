@@ -19,6 +19,7 @@ class ResourceRequest extends FormRequest
             'category_id' => ['required', Rule::exists('marketplace_categories', 'id')->where('is_enabled', true)],
             'tags' => ['nullable', 'array', 'max:50'],
             'tags.*' => ['integer', 'distinct', Rule::exists('marketplace_tags', 'id')->where('is_enabled', true)],
+            'editor_upload_token' => ['required', 'uuid'],
             'name' => ['required', 'string', 'max:100'],
             'version' => ['nullable', 'string', 'max:30'],
             'summary' => ['required', 'string', 'max:500'],

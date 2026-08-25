@@ -4,9 +4,11 @@ namespace Azuriom\Plugin\Marketplace\Providers;
 
 use Azuriom\Extensions\Plugin\BasePluginServiceProvider;
 use Azuriom\Models\Permission;
+use Azuriom\Plugin\Marketplace\Commands\CleanupEditorImages;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Console\Scheduling\Schedule;
 
 class MarketplaceServiceProvider extends BasePluginServiceProvider
 {
@@ -17,6 +19,11 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
         $this->loadMigrations();
         $this->registerRouteDescriptions();
         $this->registerAdminNavigation();
+
+        $this->commands(CleanupEditorImages::class);
+        if (method_exists($this, 'registerSchedule')) {
+            $this->registerSchedule();
+        }
 
         Permission::registerPermissions([
             'marketplace.admin' => 'marketplace::admin.permissions.admin',
@@ -40,6 +47,11 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
     protected function routeDescriptions(): array
     {
         return ['marketplace.index' => trans('marketplace::messages.title')];
+    }
+
+    protected function schedule(Schedule $schedule): void
+    {
+        $schedule->command('marketplace:cleanup-editor-images')->daily();
     }
 
     protected function adminNavigation(): array

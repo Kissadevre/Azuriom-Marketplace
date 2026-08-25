@@ -13,8 +13,34 @@
             entity_encoding: 'raw',
             plugins: 'autolink code image link lists table visualblocks wordcount',
             toolbar: 'undo redo | blocks | bold italic underline strikethrough | bullist numlist blockquote | link image table hr | removeformat visualblocks code',
-            paste_data_images: false,
-            automatic_uploads: false,
+            paste_data_images: true,
+            automatic_uploads: true,
+            images_file_types: 'jpg,jpeg,png,webp',
+            images_upload_handler: (blobInfo) => new Promise((resolve, reject) => {
+                const body = new FormData();
+                body.append('image', blobInfo.blob(), blobInfo.filename());
+                body.append('draft_token', document.getElementById('editorUploadToken').value);
+
+                fetch(@json(route('marketplace.editor-images.store')), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': @json(csrf_token()),
+                    },
+                    body,
+                }).then(async (response) => {
+                    const data = await response.json().catch(() => ({}));
+                    if (! response.ok || ! data.location) {
+                        const validationError = data.errors
+                            ? Object.values(data.errors).flat()[0]
+                            : null;
+                        throw new Error(validationError || data.message || @json(trans('marketplace::messages.editor_images.upload_failed')));
+                    }
+
+                    resolve(data.location);
+                }).catch((error) => reject(error.message));
+            }),
             relative_urls: false,
             convert_urls: false,
             valid_elements: 'p,br,h2,h3,h4,strong/b,em/i,u,s,blockquote,ul,ol,li,a[href|title|target],img[src|alt|title|width|height],table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],pre,code,hr',

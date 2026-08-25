@@ -73,6 +73,20 @@
                 <small class="form-text text-muted">@lang('marketplace::admin.settings.max_file_size_help')</small>
             </div>
 
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="maxEditorImageSize">@lang('marketplace::admin.settings.max_editor_image_size')</label>
+                    <div class="input-group"><input id="maxEditorImageSize" type="number" min="100" max="20480" name="max_editor_image_size" class="form-control @error('max_editor_image_size') is-invalid @enderror" value="{{ old('max_editor_image_size', setting('marketplace.max_editor_image_size', 5120)) }}" required><span class="input-group-text">KB</span>@error('max_editor_image_size')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
+                    <small class="form-text text-muted">@lang('marketplace::admin.settings.max_editor_image_size_help')</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="maxEditorImages">@lang('marketplace::admin.settings.max_editor_images')</label>
+                    <input id="maxEditorImages" type="number" min="1" max="100" name="max_editor_images" class="form-control @error('max_editor_images') is-invalid @enderror" value="{{ old('max_editor_images', setting('marketplace.max_editor_images', 20)) }}" required>
+                    @error('max_editor_images')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    <small class="form-text text-muted">@lang('marketplace::admin.settings.max_editor_images_help')</small>
+                </div>
+            </div>
+
             <div>
                 <label class="form-label fw-semibold" for="allowedExtensions">@lang('marketplace::admin.settings.allowed_extensions')</label>
                 <textarea id="allowedExtensions" name="allowed_extensions" class="form-control font-monospace @error('allowed_extensions') is-invalid @enderror" rows="3" required>{{ old('allowed_extensions', $allowedExtensions) }}</textarea>

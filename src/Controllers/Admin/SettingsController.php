@@ -26,6 +26,8 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'max_file_size' => ['required', 'integer', 'min:1', 'max:1048576'],
+            'max_editor_image_size' => ['required', 'integer', 'min:100', 'max:20480'],
+            'max_editor_images' => ['required', 'integer', 'min:1', 'max:100'],
             'allowed_extensions' => [
                 'required',
                 'string',
@@ -60,6 +62,8 @@ class SettingsController extends Controller
             'marketplace.pause_comments' => $request->boolean('pause_comments'),
             'marketplace.require_login_for_free_downloads' => $request->boolean('require_login_for_free_downloads'),
             'marketplace.max_file_size' => $data['max_file_size'],
+            'marketplace.max_editor_image_size' => $data['max_editor_image_size'],
+            'marketplace.max_editor_images' => $data['max_editor_images'],
             'marketplace.allowed_extensions' => implode(',', $allowedExtensions),
         ]);
 

@@ -6,6 +6,7 @@ use Azuriom\Models\Traits\HasTablePrefix;
 use Azuriom\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Resource extends Model
@@ -24,6 +25,11 @@ class Resource extends Model
         static::addGlobalScope('notArchived', fn (Builder $query) => $query->whereNull(
             $query->getModel()->qualifyColumn('archived_at')
         ));
+
+        static::deleting(function (Resource $resource) {
+            Storage::disk('local')->delete(array_filter([$resource->file_path, $resource->banner_path]));
+            $resource->images()->get()->each->delete();
+        });
     }
 
     public function getRouteKeyName(): string { return 'uuid'; }
@@ -32,6 +38,7 @@ class Resource extends Model
     public function comments() { return $this->hasMany(Comment::class)->latest(); }
     public function ratings() { return $this->hasMany(Rating::class); }
     public function purchases() { return $this->hasMany(Purchase::class); }
+    public function images() { return $this->hasMany(ResourceImage::class); }
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'marketplace_resource_tag')

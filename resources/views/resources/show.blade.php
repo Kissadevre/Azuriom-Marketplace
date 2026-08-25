@@ -28,6 +28,7 @@
     .marketplace-resource-aside { position: sticky; top: 1.5rem; }
     .marketplace-empty-comments { padding: 2rem; border: 1px dashed var(--bs-border-color); border-radius: 1rem; text-align: center; }
     .marketplace-update-card { border-radius: 1rem; }
+    .marketplace-comment-input { min-height: 3rem; max-height: 12rem; resize: none; overflow-y: hidden; }
     @media (max-width: 767.98px) { .marketplace-resource-header { padding: 1.25rem; } .marketplace-resource-actions { width: 100%; } }
 </style>
 @endpush
@@ -107,7 +108,7 @@
                     @else
                     @auth
                         @if(! $resource->isPaused() && $resource->isUnlockedBy(auth()->user()) && $resource->status === 'published')
-                            <form method="POST" action="{{ route('marketplace.comments.store', $resource) }}" class="card marketplace-comment-card mb-4">@csrf<div class="card-body"><textarea name="content" class="form-control mb-3" rows="3" maxlength="5000" required placeholder="@lang('marketplace::messages.comment')"></textarea><div class="text-end"><button class="btn btn-primary px-4"><i class="bi bi-send me-1" aria-hidden="true"></i>@lang('marketplace::messages.comment')</button></div></div></form>
+                            <form method="POST" action="{{ route('marketplace.comments.store', $resource) }}" class="card marketplace-comment-card mb-4">@csrf<div class="card-body"><textarea id="marketplaceCommentInput" name="content" class="marketplace-comment-input form-control" rows="1" maxlength="150" required placeholder="@lang('marketplace::messages.comment')" aria-describedby="marketplaceCommentCounter">{{ old('content') }}</textarea><div class="d-flex justify-content-between align-items-center gap-3 mt-2"><small id="marketplaceCommentCounter" class="text-muted"><span>0</span>/150</small><button class="btn btn-primary px-4"><i class="bi bi-send me-1" aria-hidden="true"></i>@lang('marketplace::messages.comment')</button></div></div></form>
                         @endif
                     @endauth
                     @endif
@@ -248,6 +249,21 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const commentInput = document.getElementById('marketplaceCommentInput');
+        const commentCounter = document.querySelector('#marketplaceCommentCounter span');
+
+        if (commentInput) {
+            const resizeComment = () => {
+                commentInput.style.height = 'auto';
+                commentInput.style.height = `${Math.min(commentInput.scrollHeight, 192)}px`;
+                commentInput.style.overflowY = commentInput.scrollHeight > 192 ? 'auto' : 'hidden';
+                commentCounter.textContent = commentInput.value.length;
+            };
+
+            commentInput.addEventListener('input', resizeComment);
+            resizeComment();
+        }
+
         const modalElement = document.getElementById('marketplaceConfirmModal');
 
         if (! modalElement) {

@@ -7,6 +7,7 @@ use Azuriom\Notifications\AlertNotification;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CommentController extends Controller
 {
@@ -26,7 +27,15 @@ class CommentController extends Controller
             403
         );
 
-        $data = $request->validate(['content' => ['required', 'string', 'max:5000']]);
+        $request->merge([
+            'content' => Str::squish(strip_tags((string) $request->input('content', ''))),
+        ]);
+
+        $data = $request->validate(
+            ['content' => ['required', 'string', 'max:150', 'regex:/^[\pL\pN ]+$/u']],
+            ['content.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces')],
+            ['content' => trans('marketplace::messages.comment')]
+        );
         $resource->comments()->create($data + ['user_id' => $request->user()->id]);
 
         if (! $request->user()->is($resource->author)) {

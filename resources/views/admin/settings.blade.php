@@ -139,13 +139,29 @@
 <script>
     document.querySelectorAll('[data-integer-only]').forEach((input) => {
         input.addEventListener('keydown', (event) => {
-            if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+            const hasModifier = event.ctrlKey || event.metaKey || event.altKey;
+
+            if (! hasModifier && event.key.length === 1 && ! /^\d$/.test(event.key)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('beforeinput', (event) => {
+            if (event.inputType.startsWith('insert') && event.data !== null && /\D/.test(event.data)) {
                 event.preventDefault();
             }
         });
 
         input.addEventListener('paste', (event) => {
             const value = event.clipboardData?.getData('text') ?? '';
+
+            if (! /^\d+$/.test(value)) {
+                event.preventDefault();
+            }
+        });
+
+        input.addEventListener('drop', (event) => {
+            const value = event.dataTransfer?.getData('text') ?? '';
 
             if (! /^\d+$/.test(value)) {
                 event.preventDefault();

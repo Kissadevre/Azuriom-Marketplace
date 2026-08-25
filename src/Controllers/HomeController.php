@@ -48,7 +48,12 @@ class HomeController extends Controller
         $query = Resource::query()
             ->where('category_id', $category->id)
             ->when(! $canModerate, fn (Builder $query) => $query->published())
-            ->with(['author', 'tags', 'latestUpdate'])
+            ->with(['category', 'author', 'tags', 'latestUpdate'])
+            ->when($request->filled('search'), fn (Builder $query) => $query->where(
+                fn (Builder $query) => $query
+                    ->where('name', 'like', '%'.$request->string('search').'%')
+                    ->orWhere('summary', 'like', '%'.$request->string('search').'%')
+            ))
             ->withAvg('ratings', 'rating');
         $resources = $this->applySorting($query, $sort)->paginate(12)->withQueryString();
         $categories = $this->categories($request, $canModerate);

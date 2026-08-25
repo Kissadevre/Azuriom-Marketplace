@@ -214,7 +214,7 @@ class ResourceController extends Controller
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token']);
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid']);
         $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
 
         if ($data['description'] === '') {

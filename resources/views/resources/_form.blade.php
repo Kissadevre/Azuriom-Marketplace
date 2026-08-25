@@ -66,7 +66,10 @@
                 <div class="card-header"><strong><i class="bi bi-box-arrow-down me-2" aria-hidden="true"></i>@lang('marketplace::messages.fields.delivery')</strong></div>
                 <div class="card-body">
                     <div class="mb-3"><label class="form-label" for="deliveryType">@lang('marketplace::messages.fields.delivery')</label><select id="deliveryType" name="delivery_type" class="form-select"><option value="file" @selected(old('delivery_type',$resource->delivery_type??'file')==='file')>@lang('marketplace::messages.file')</option><option value="external" @selected(old('delivery_type',$resource->delivery_type??'')==='external')>@lang('marketplace::messages.external')</option></select></div>
-                    <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.price')</label><div class="input-group"><span class="input-group-text"><i class="bi bi-coin" aria-hidden="true"></i></span><input type="number" step="0.01" min="0" name="price" class="form-control" value="{{ old('price',$resource->price??0) }}" required></div></div>
+                    @php($currentPrice = (int) old('price', $resource->price ?? 0))
+                    @php($isPaid = old('is_paid', $currentPrice > 0))
+                    <div class="form-check form-switch mb-3"><input type="hidden" name="is_paid" value="0"><input class="form-check-input" type="checkbox" role="switch" id="paidResource" name="is_paid" value="1" @checked(filter_var($isPaid, FILTER_VALIDATE_BOOLEAN))><label class="form-check-label fw-semibold" for="paidResource">@lang('marketplace::messages.paid_resource')</label><small class="form-text text-muted d-block">@lang('marketplace::messages.paid_help')</small></div>
+                    <div id="coinPriceGroup" class="mb-3"><label class="form-label" for="coinPrice">@lang('marketplace::messages.fields.price')</label><div class="input-group"><span class="input-group-text"><i class="bi bi-coin" aria-hidden="true"></i></span><input id="coinPrice" type="number" step="1" min="1" inputmode="numeric" name="price" class="form-control @error('price') is-invalid @enderror" value="{{ $currentPrice > 0 ? $currentPrice : 0 }}" required></div>@error('price')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror</div>
                     <div id="fileDeliveryGroup"><label class="form-label" for="resourceFile">@lang('marketplace::messages.fields.file')</label><input id="resourceFile" type="file" name="file" class="form-control" accept="{{ app(\Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy::class)->acceptAttribute() }}"></div>
                     <div id="externalDeliveryGroup"><label class="form-label" for="resourceExternalUrl">@lang('marketplace::messages.fields.url')</label><input id="resourceExternalUrl" type="url" name="external_url" class="form-control" value="{{ old('external_url',$resource->external_url??'') }}"></div>
                 </div>
@@ -84,6 +87,9 @@
         const fileInput = document.getElementById('resourceFile');
         const externalGroup = document.getElementById('externalDeliveryGroup');
         const externalInput = document.getElementById('resourceExternalUrl');
+        const paidResource = document.getElementById('paidResource');
+        const coinPriceGroup = document.getElementById('coinPriceGroup');
+        const coinPrice = document.getElementById('coinPrice');
         const fileIsRequired = {{ isset($resource) && $resource->file_path ? 'false' : 'true' }};
 
         const updateDeliveryFields = () => {
@@ -99,6 +105,31 @@
 
         deliveryType.addEventListener('change', updateDeliveryFields);
         updateDeliveryFields();
+
+        const updatePriceField = () => {
+            const isPaid = paidResource.checked;
+
+            coinPriceGroup.hidden = ! isPaid;
+            coinPrice.min = isPaid ? '1' : '0';
+            coinPrice.value = isPaid ? Math.max(1, Number.parseInt(coinPrice.dataset.paidValue || coinPrice.value, 10) || 1) : 0;
+        };
+
+        paidResource.addEventListener('change', () => {
+            if (! paidResource.checked && Number.parseInt(coinPrice.value, 10) > 0) {
+                coinPrice.dataset.paidValue = coinPrice.value;
+            }
+
+            updatePriceField();
+        });
+        coinPrice.addEventListener('keydown', (event) => {
+            if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+                event.preventDefault();
+            }
+        });
+        coinPrice.addEventListener('input', () => {
+            coinPrice.value = coinPrice.value.replace(/\D/g, '');
+        });
+        updatePriceField();
 
         document.querySelectorAll('[data-character-counter]').forEach((input) => {
             const counter = document.getElementById(input.dataset.characterCounter);

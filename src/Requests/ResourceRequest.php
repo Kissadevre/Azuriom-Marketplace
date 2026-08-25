@@ -30,7 +30,14 @@ class ResourceRequest extends FormRequest
             'delivery_type' => ['required', Rule::in(['file', 'external'])],
             'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', new AllowedResourceExtension($allowedExtensions), 'max:'.((int) setting('marketplace.max_file_size', 51200))],
             'external_url' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'external'), 'nullable', 'url:http,https', 'max:2000'],
-            'price' => ['required', 'numeric', 'min:0', 'max:999999999'],
+            'is_paid' => ['sometimes', 'boolean'],
+            'price' => [
+                'required',
+                'integer',
+                Rule::when($this->boolean('is_paid'), ['min:1']),
+                Rule::when(! $this->boolean('is_paid'), [Rule::in([0])]),
+                'max:999999999',
+            ],
         ];
     }
 

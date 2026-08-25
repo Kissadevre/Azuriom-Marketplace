@@ -7,6 +7,7 @@ use Azuriom\Notifications\AlertNotification;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CommentController extends Controller
@@ -62,5 +63,31 @@ class CommentController extends Controller
         $comment->delete();
 
         return back()->with('success', trans('messages.status.success'));
+    }
+
+    public function toggleLike(Request $request, Comment $comment)
+    {
+        $comment->loadMissing('resource.category');
+
+        abort_unless(
+            $comment->resource->status === 'published'
+            && ! $comment->resource->isPaused()
+            && $comment->resource->category->canAccess($request->user())
+            && $comment->resource->isUnlockedBy($request->user()),
+            403
+        );
+
+        DB::transaction(function () use ($comment, $request) {
+            $lockedComment = Comment::query()->whereKey($comment->id)->lockForUpdate()->firstOrFail();
+            $like = $lockedComment->likes()->where('user_id', $request->user()->id)->first();
+
+            if ($like) {
+                $like->delete();
+            } else {
+                $lockedComment->likes()->create(['user_id' => $request->user()->id]);
+            }
+        });
+
+        return back();
     }
 }

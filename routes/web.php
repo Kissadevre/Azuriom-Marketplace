@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/resource/{resource:uuid}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::post('/resource/{resource:uuid}/purchase', [ResourceController::class, 'purchase'])->name('resources.purchase');
     Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/comments/{comment}/like', [CommentController::class, 'toggleLike'])->name('comments.likes.toggle');
     Route::post('/resource/{resource:uuid}/report', [ReportController::class, 'resource'])->name('resources.report');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     Route::post('/comments/{comment}/report', [ReportController::class, 'comment'])->name('comments.report');

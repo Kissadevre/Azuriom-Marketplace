@@ -93,6 +93,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('marketplace_comment_likes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('comment_id')->constrained('marketplace_comments')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+            $table->unique(['comment_id', 'user_id']);
+        });
+
         Schema::create('marketplace_ratings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
@@ -131,6 +139,7 @@ return new class extends Migration
         Schema::dropIfExists('marketplace_reports');
         Schema::dropIfExists('marketplace_resource_updates');
         Schema::dropIfExists('marketplace_ratings');
+        Schema::dropIfExists('marketplace_comment_likes');
         Schema::dropIfExists('marketplace_comments');
         Schema::dropIfExists('marketplace_resource_tag');
         Schema::dropIfExists('marketplace_purchases');

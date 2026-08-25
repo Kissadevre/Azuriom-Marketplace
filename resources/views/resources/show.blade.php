@@ -139,7 +139,7 @@
                                     </div>
                                 </div>
                             @endauth
-                        </div><p class="mb-0 mt-3">{{ $comment->content }}</p></div></article>
+                        </div><p class="mb-0 mt-3">{{ $comment->content }}</p><div class="border-top mt-3 pt-3">@auth @php($commentLiked = $likedCommentIds->contains($comment->id))<form method="POST" action="{{ route('marketplace.comments.likes.toggle', $comment) }}" class="d-inline">@csrf<button class="btn btn-sm {{ $commentLiked ? 'btn-primary' : 'btn-outline-secondary' }}" type="submit" aria-pressed="{{ $commentLiked ? 'true' : 'false' }}" title="@lang($commentLiked ? 'marketplace::messages.unlike_comment' : 'marketplace::messages.like_comment')"><i class="bi bi-hand-thumbs-up{{ $commentLiked ? '-fill' : '' }} me-1" aria-hidden="true"></i><span>{{ $comment->likes_count }}</span><span class="visually-hidden"> @lang($commentLiked ? 'marketplace::messages.unlike_comment' : 'marketplace::messages.like_comment')</span></button></form>@else<span class="text-muted small"><i class="bi bi-hand-thumbs-up me-1" aria-hidden="true"></i>{{ $comment->likes_count }}</span>@endauth</div></div></article>
                     @empty
                         <div class="marketplace-empty-comments text-muted"><i class="bi bi-chat-square fs-2 d-block mb-2" aria-hidden="true"></i>@lang('marketplace::messages.no_comments')</div>
                     @endforelse

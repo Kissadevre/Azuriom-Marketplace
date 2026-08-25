@@ -5,6 +5,7 @@ namespace Azuriom\Plugin\Marketplace\Controllers;
 use Azuriom\Http\Controllers\Controller;
 use Azuriom\Models\User;
 use Azuriom\Plugin\Marketplace\Models\Category;
+use Azuriom\Plugin\Marketplace\Models\CommentLike;
 use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\Tag;
@@ -23,6 +24,13 @@ class ResourceController extends Controller
     {
         abort_unless($this->canView($request, $resource), 403);
         $resource->load(['author', 'category', 'tags', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
+        $resource->comments->loadCount('likes');
+        $likedCommentIds = $request->user()
+            ? CommentLike::query()
+                ->where('user_id', $request->user()->id)
+                ->whereIn('comment_id', $resource->comments->modelKeys())
+                ->pluck('comment_id')
+            : collect();
 
         $categories = Category::enabled()->get();
         if (! $this->hasResourceToolPermission($request)) {
@@ -39,7 +47,7 @@ class ResourceController extends Controller
             ->limit(4)
             ->get();
 
-        return view('marketplace::resources.show', compact('resource', 'relatedResources'));
+        return view('marketplace::resources.show', compact('resource', 'relatedResources', 'likedCommentIds'));
     }
 
     public function banner(Request $request, Resource $resource)

@@ -26,6 +26,7 @@
                     @if($resource->isPaused())<span class="badge bg-warning text-dark">@lang('marketplace::messages.paused')</span>@endif
                     <h1 class="mt-2">{{ $resource->name }}</h1>
                     <p class="text-muted">@lang('marketplace::messages.by') {{ $resource->author->name }} @if($resource->version) · v{{ $resource->version }} @endif</p>
+                    @if($resource->tags->isNotEmpty())<div class="d-flex flex-wrap gap-1">@foreach($resource->tags as $tag)<span class="badge bg-body-secondary text-body d-inline-flex align-items-center gap-1"><span class="rounded-circle" style="width: .6rem; height: .6rem; background-color: {{ $tag->color }};"></span>{{ $tag->name }}</span>@endforeach</div>@endif
                 </div>
 
                 @auth

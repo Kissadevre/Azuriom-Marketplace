@@ -32,6 +32,13 @@ class Resource extends Model
     public function comments() { return $this->hasMany(Comment::class)->latest(); }
     public function ratings() { return $this->hasMany(Rating::class); }
     public function purchases() { return $this->hasMany(Purchase::class); }
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'marketplace_resource_tag')
+            ->where('marketplace_tags.is_enabled', true)
+            ->orderBy('marketplace_tags.position')
+            ->orderBy('marketplace_tags.name');
+    }
     public function updates() { return $this->hasMany(ResourceUpdate::class)->latest(); }
     public function latestUpdate() { return $this->hasOne(ResourceUpdate::class)->latestOfMany(); }
     public function reports() { return $this->morphMany(Report::class, 'reportable'); }

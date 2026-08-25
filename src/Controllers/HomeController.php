@@ -19,7 +19,7 @@ class HomeController extends Controller
         $mine = false;
 
         $query = Resource::query()
-            ->with(['category', 'author', 'latestUpdate'])
+            ->with(['category', 'author', 'tags', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->when(! $canModerate, fn (Builder $query) => $query
                 ->published()
@@ -48,7 +48,7 @@ class HomeController extends Controller
         $query = Resource::query()
             ->where('category_id', $category->id)
             ->when(! $canModerate, fn (Builder $query) => $query->published())
-            ->with(['author', 'latestUpdate'])
+            ->with(['author', 'tags', 'latestUpdate'])
             ->withAvg('ratings', 'rating');
         $resources = $this->applySorting($query, $sort)->paginate(12)->withQueryString();
         $categories = $this->categories($request, $canModerate);
@@ -66,7 +66,7 @@ class HomeController extends Controller
 
         $query = Resource::query()
             ->where('user_id', $request->user()->id)
-            ->with(['category', 'author', 'latestUpdate'])
+            ->with(['category', 'author', 'tags', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->when($request->filled('search'), fn (Builder $query) => $query->where(
                 fn (Builder $query) => $query

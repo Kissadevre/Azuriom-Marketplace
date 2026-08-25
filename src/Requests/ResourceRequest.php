@@ -17,6 +17,8 @@ class ResourceRequest extends FormRequest
 
         return [
             'category_id' => ['required', Rule::exists('marketplace_categories', 'id')->where('is_enabled', true)],
+            'tags' => ['nullable', 'array', 'max:50'],
+            'tags.*' => ['integer', 'distinct', Rule::exists('marketplace_tags', 'id')->where('is_enabled', true)],
             'name' => ['required', 'string', 'max:100'],
             'version' => ['nullable', 'string', 'max:30'],
             'summary' => ['required', 'string', 'max:500'],

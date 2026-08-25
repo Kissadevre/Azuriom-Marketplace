@@ -27,7 +27,9 @@ The plugin includes category access controls, content moderation, reporting tool
 ### Discovery and categories
 
 - Administrator-managed categories with icons, descriptions, ordering, and enabled status.
+- Administrator-managed tags with descriptions, colors, ordering, and enabled status.
 - Optional category access restrictions by Azuriom role.
+- Optional many-to-many tag assignment when creating or editing resources.
 - Resource counters for each category.
 - Administrative resource lists per category.
 - Sorting by recently updated, download count, or highest rating.
@@ -80,6 +82,7 @@ The plugin includes category access controls, content moderation, reporting tool
 The Marketplace administration menu contains dedicated pages for:
 
 - Categories
+- Tags
 - Pending resources
 - Community reports
 - Settings and marketplace statistics

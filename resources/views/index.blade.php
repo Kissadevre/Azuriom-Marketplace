@@ -60,6 +60,7 @@
                             <strong>{{ $resource->price > 0 ? format_money($resource->price) : trans('marketplace::messages.free') }}</strong>
                         </div>
                         <h2 class="h5 mt-3"><a class="text-decoration-none" href="{{ route('marketplace.resources.show', $resource) }}">{{ $resource->name }}</a></h2>
+                        @if($resource->tags->isNotEmpty())<div class="d-flex flex-wrap gap-1 mb-2">@foreach($resource->tags as $tag)<span class="badge bg-body-secondary text-body d-inline-flex align-items-center gap-1"><span class="rounded-circle" style="width: .6rem; height: .6rem; background-color: {{ $tag->color }};"></span>{{ $tag->name }}</span>@endforeach</div>@endif
                         <p>{{ $resource->summary }}</p>
                         <small class="text-muted d-block">{{ $resource->author->name }} · ★ {{ round($resource->ratings_avg_rating ?? 0, 1) }}</small>
                         @if($resource->version)<small class="text-muted">v{{ $resource->version }}@if($resource->latestUpdate) · @lang('marketplace::messages.updates.updated') {{ format_date($resource->latestUpdate->created_at) }}@endif</small>@endif

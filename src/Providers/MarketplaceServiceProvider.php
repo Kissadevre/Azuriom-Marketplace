@@ -53,6 +53,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
                 'route' => 'marketplace.admin.*',
                 'items' => [
                     'marketplace.admin.categories.index' => trans('marketplace::admin.categories.title'),
+                    'marketplace.admin.tags.index' => trans('marketplace::admin.tags.title'),
                     'marketplace.admin.resources.pending' => trans('marketplace::admin.pending_resources.title'),
                     'marketplace.admin.reports.index' => trans('marketplace::admin.reports.title'),
                     'marketplace.admin.settings.edit' => trans('marketplace::admin.settings.title'),

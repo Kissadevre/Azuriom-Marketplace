@@ -1,5 +1,26 @@
 @csrf
 <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.category')</label><select name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
+<div class="mb-3">
+    <label class="form-label">@lang('marketplace::messages.fields.tags')</label>
+    @php($selectedTags = array_map('intval', old('tags', isset($resource) ? $resource->tags->pluck('id')->all() : [])))
+    @if($tags->isNotEmpty())
+        <div class="row g-2">
+            @foreach($tags as $tag)
+                <div class="col-sm-6 col-lg-4">
+                    <label class="form-check border rounded p-3 ps-5 h-100">
+                        <input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags, true))>
+                        <span class="d-flex align-items-center gap-2"><span class="rounded-circle border flex-shrink-0" style="width: .875rem; height: .875rem; background-color: {{ $tag->color }};"></span><span>{{ $tag->name }}</span></span>
+                    </label>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="text-muted small">@lang('marketplace::messages.tags.empty')</div>
+    @endif
+    @error('tags')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    @error('tags.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    <small class="form-text text-muted">@lang('marketplace::messages.tags.optional_help')</small>
+</div>
 <div class="row"><div class="col-md-8 mb-3"><label class="form-label">@lang('messages.fields.name')</label><input class="form-control" name="name" maxlength="100" value="{{ old('name',$resource->name??'') }}" required></div><div class="col-md-4 mb-3"><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control" name="version" value="{{ old('version',$resource->version??'') }}"></div></div>
 <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.summary')</label><textarea class="form-control" name="summary" maxlength="500" required>{{ old('summary',$resource->summary??'') }}</textarea></div>
 <div class="mb-3"><label class="form-label" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control html-editor" rows="14" name="description">{{ old('description',$resource->description??'') }}</textarea><small class="form-text text-muted">@lang('marketplace::messages.editor.help')</small></div>

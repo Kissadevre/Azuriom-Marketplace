@@ -20,6 +20,17 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('marketplace_tags', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('color', 7)->default('#6c757d');
+            $table->unsignedInteger('position')->default(0);
+            $table->boolean('is_enabled')->default(true);
+            $table->timestamps();
+        });
+
         Schema::create('marketplace_resources', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -51,6 +62,12 @@ return new class extends Migration
             $table->decimal('price', 16, 2);
             $table->timestamps();
             $table->unique(['resource_id', 'user_id']);
+        });
+
+        Schema::create('marketplace_resource_tag', function (Blueprint $table) {
+            $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
+            $table->foreignId('tag_id')->constrained('marketplace_tags')->cascadeOnDelete();
+            $table->primary(['resource_id', 'tag_id']);
         });
 
         Schema::create('marketplace_comments', function (Blueprint $table) {
@@ -100,8 +117,10 @@ return new class extends Migration
         Schema::dropIfExists('marketplace_resource_updates');
         Schema::dropIfExists('marketplace_ratings');
         Schema::dropIfExists('marketplace_comments');
+        Schema::dropIfExists('marketplace_resource_tag');
         Schema::dropIfExists('marketplace_purchases');
         Schema::dropIfExists('marketplace_resources');
+        Schema::dropIfExists('marketplace_tags');
         Schema::dropIfExists('marketplace_categories');
     }
 };

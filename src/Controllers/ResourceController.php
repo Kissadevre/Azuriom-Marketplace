@@ -7,6 +7,7 @@ use Azuriom\Models\User;
 use Azuriom\Plugin\Marketplace\Models\Category;
 use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
+use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
 use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class ResourceController extends Controller
     public function show(Request $request, Resource $resource)
     {
         abort_unless($this->canView($request, $resource), 403);
-        $resource->load(['author', 'category', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
+        $resource->load(['author', 'category', 'tags', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
 
         $categories = Category::enabled()->get();
         if (! $this->hasResourceToolPermission($request)) {
@@ -30,7 +31,7 @@ class ResourceController extends Controller
             ->where('user_id', $resource->user_id)
             ->whereKeyNot($resource->id)
             ->whereIn('category_id', $categories->pluck('id'))
-            ->with(['category', 'latestUpdate'])
+            ->with(['category', 'tags', 'latestUpdate'])
             ->withAvg('ratings', 'rating')
             ->latest('published_at')
             ->limit(4)
@@ -63,7 +64,10 @@ class ResourceController extends Controller
             trans('marketplace::messages.submissions_paused')
         );
 
-        return view('marketplace::resources.create', ['categories' => $this->categories($request)]);
+        return view('marketplace::resources.create', [
+            'categories' => $this->categories($request),
+            'tags' => $this->tags(),
+        ]);
     }
 
     public function store(ResourceRequest $request)
@@ -83,13 +87,21 @@ class ResourceController extends Controller
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published' ? now() : null;
         $resource = Resource::create($data);
+        $resource->tags()->sync($request->validated('tags', []));
+
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
 
     public function edit(Request $request, Resource $resource)
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
-        return view('marketplace::resources.edit', ['resource' => $resource, 'categories' => $this->categories($request)]);
+        $resource->load('tags');
+
+        return view('marketplace::resources.edit', [
+            'resource' => $resource,
+            'categories' => $this->categories($request),
+            'tags' => $this->tags(),
+        ]);
     }
 
     public function update(ResourceRequest $request, Resource $resource)
@@ -106,6 +118,8 @@ class ResourceController extends Controller
             ? ($resource->published_at ?? now())
             : null;
         $resource->update($data);
+        $resource->tags()->sync($request->validated('tags', []));
+
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
 
@@ -184,9 +198,14 @@ class ResourceController extends Controller
             ? $categories
             : $categories->filter->canAccess($request->user());
     }
+
+    private function tags()
+    {
+        return Tag::enabled()->orderBy('position')->orderBy('name')->get();
+    }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except(['file', 'banner', 'remove_banner']);
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags']);
         $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
 
         if ($data['description'] === '') {

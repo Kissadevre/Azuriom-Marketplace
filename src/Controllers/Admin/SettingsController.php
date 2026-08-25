@@ -24,14 +24,16 @@ class SettingsController extends Controller
 
     public function update(Request $request, ResourceFilePolicy $filePolicy)
     {
+        $wholeNumber = ['bail', 'required', 'regex:/^\d+$/', 'integer'];
+
         $data = $request->validate([
-            'max_file_size' => ['required', 'integer', 'min:1', 'max:1048576'],
-            'max_editor_image_size' => ['required', 'integer', 'min:100', 'max:20480'],
-            'max_editor_images' => ['required', 'integer', 'min:1', 'max:100'],
-            'rate_limit_publish' => ['required', 'integer', 'min:0', 'max:86400'],
-            'rate_limit_edit' => ['required', 'integer', 'min:0', 'max:86400'],
-            'rate_limit_update' => ['required', 'integer', 'min:0', 'max:86400'],
-            'rate_limit_comment' => ['required', 'integer', 'min:0', 'max:86400'],
+            'max_file_size' => [...$wholeNumber, 'min:1', 'max:1048576'],
+            'max_editor_image_size' => [...$wholeNumber, 'min:100', 'max:20480'],
+            'max_editor_images' => [...$wholeNumber, 'min:1', 'max:100'],
+            'rate_limit_publish' => [...$wholeNumber, 'min:0', 'max:86400'],
+            'rate_limit_edit' => [...$wholeNumber, 'min:0', 'max:86400'],
+            'rate_limit_update' => [...$wholeNumber, 'min:0', 'max:86400'],
+            'rate_limit_comment' => [...$wholeNumber, 'min:0', 'max:86400'],
             'allowed_extensions' => [
                 'required',
                 'string',

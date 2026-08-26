@@ -58,7 +58,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('footer-scripts')
 <script>
     document.getElementById('restoreResourceModal')?.addEventListener('show.bs.modal', (event) => {
         const button = event.relatedTarget;

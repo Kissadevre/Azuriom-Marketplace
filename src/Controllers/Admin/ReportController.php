@@ -15,7 +15,7 @@ class ReportController extends Controller
             'reports' => Report::with([
                 'reporter',
                 'reportable' => fn (MorphTo $morphTo) => $morphTo->morphWith([
-                    Comment::class => ['resource'],
+                    Comment::class => ['resource', 'user'],
                 ]),
             ])
                 ->latest()

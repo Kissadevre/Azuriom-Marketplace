@@ -48,7 +48,7 @@ class ReportController extends Controller
     private function store(Request $request, Model $reportable, string $subject, ?string $excerpt)
     {
         $data = $request->validate([
-            'reason' => ['required', 'string', 'min:5', 'max:2000'],
+            'reason' => ['required', 'string', 'min:5', 'max:64'],
         ]);
 
         $report = $reportable->reports()->firstOrCreate(

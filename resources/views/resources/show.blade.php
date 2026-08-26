@@ -239,7 +239,7 @@
                     <p class="text-muted">@lang('marketplace::messages.reports.message')</p>
                     <div class="alert alert-light border" id="marketplaceReportSubject"></div>
                     <label class="form-label" for="marketplaceReportReason">@lang('marketplace::messages.reports.reason')</label>
-                    <textarea id="marketplaceReportReason" name="reason" class="form-control" rows="5" minlength="5" maxlength="2000" required></textarea>
+                    <textarea id="marketplaceReportReason" name="reason" class="form-control" rows="3" minlength="5" maxlength="64" required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('marketplace::messages.confirm.cancel')</button>

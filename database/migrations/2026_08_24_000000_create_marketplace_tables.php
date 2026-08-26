@@ -35,7 +35,8 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('category_id')->constrained('marketplace_categories')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('name');
             $table->string('version')->nullable();
             $table->text('summary');
@@ -59,7 +60,8 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('resource_id')->nullable()->constrained('marketplace_resources')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->uuid('draft_token')->nullable()->index();
             $table->string('path');
             $table->string('mime_type', 20);
@@ -73,7 +75,8 @@ return new class extends Migration
         Schema::create('marketplace_purchases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->decimal('price', 16, 2);
             $table->timestamps();
             $table->unique(['resource_id', 'user_id']);
@@ -88,7 +91,8 @@ return new class extends Migration
         Schema::create('marketplace_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->text('content');
             $table->timestamps();
         });
@@ -96,7 +100,8 @@ return new class extends Migration
         Schema::create('marketplace_comment_likes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('comment_id')->constrained('marketplace_comments')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['comment_id', 'user_id']);
         });
@@ -104,7 +109,8 @@ return new class extends Migration
         Schema::create('marketplace_ratings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->unsignedTinyInteger('rating');
             $table->timestamps();
             $table->unique(['resource_id', 'user_id']);
@@ -113,7 +119,8 @@ return new class extends Migration
         Schema::create('marketplace_resource_updates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resource_id')->constrained('marketplace_resources')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('version', 30);
             $table->text('description');
             $table->timestamps();
@@ -122,7 +129,8 @@ return new class extends Migration
 
         Schema::create('marketplace_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('reportable_type', 50);
             $table->unsignedBigInteger('reportable_id');
             $table->string('subject');
@@ -135,9 +143,12 @@ return new class extends Migration
 
         Schema::create('marketplace_restrictions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('lifted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('created_by')->nullable();
+            $table->unsignedInteger('lifted_by')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('lifted_by')->references('id')->on('users')->nullOnDelete();
             $table->json('actions');
             $table->text('reason')->nullable();
             $table->timestamp('expires_at')->nullable()->index();

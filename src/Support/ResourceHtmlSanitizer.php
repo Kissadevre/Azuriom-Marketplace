@@ -24,6 +24,8 @@ class ResourceHtmlSanitizer
     private const DROP_WITH_CONTENT = [
         'script', 'style', 'iframe', 'object', 'embed', 'svg', 'math',
         'form', 'input', 'button', 'textarea', 'select', 'option',
+        'template', 'noscript', 'xmp', 'plaintext', 'listing',
+        'frame', 'frameset', 'applet', 'audio', 'video', 'source', 'track',
     ];
 
     public function sanitize(string $html): string
@@ -59,6 +61,11 @@ class ResourceHtmlSanitizer
     private function sanitizeChildren(DOMNode $parent): void
     {
         foreach (iterator_to_array($parent->childNodes) as $node) {
+            if (in_array($node->nodeType, [XML_COMMENT_NODE, XML_PI_NODE, XML_DOCUMENT_TYPE_NODE], true)) {
+                $node->parentNode?->removeChild($node);
+                continue;
+            }
+
             if (! $node instanceof DOMElement) {
                 continue;
             }
@@ -94,7 +101,7 @@ class ResourceHtmlSanitizer
                 $element->removeAttribute('href');
             }
 
-            if ($element->getAttribute('target') !== '_blank') {
+            if (! $element->hasAttribute('href') || $element->getAttribute('target') !== '_blank') {
                 $element->removeAttribute('target');
             } else {
                 $element->setAttribute('rel', 'nofollow noopener noreferrer');
@@ -116,8 +123,12 @@ class ResourceHtmlSanitizer
 
     private function isSafeUrl(string $url, bool $allowMail = false): bool
     {
-        $url = trim($url);
+        $url = trim(html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if ($url === '') {
+            return false;
+        }
+
+        if (str_contains($url, '\\') || preg_match('/[\p{C}\p{Z}\s]/u', $url)) {
             return false;
         }
 
@@ -126,7 +137,16 @@ class ResourceHtmlSanitizer
             return str_starts_with($url, '/') && ! str_starts_with($url, '//');
         }
 
-        return in_array($scheme, $allowMail ? ['http', 'https', 'mailto'] : ['http', 'https'], true);
+        if (in_array($scheme, ['http', 'https'], true)) {
+            return filter_var($url, FILTER_VALIDATE_URL) !== false
+                && parse_url($url, PHP_URL_HOST) !== null;
+        }
+
+        if ($allowMail && $scheme === 'mailto') {
+            return filter_var(substr($url, 7), FILTER_VALIDATE_EMAIL) !== false;
+        }
+
+        return false;
     }
 
     private function unwrap(DOMElement $element): void

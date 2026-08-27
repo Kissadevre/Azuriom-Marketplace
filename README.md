@@ -159,6 +159,7 @@ Do not use this reset workflow on a production installation containing Marketpla
 
 - Resource files and banners are stored on the private `local` filesystem disk and served through authorized controller actions.
 - Resource descriptions are sanitized with an explicit HTML element, attribute, and URL-protocol allowlist.
+- Source-code edits are filtered by TinyMCE and re-sanitized on the server, including malformed markup, active-content elements, event attributes, unsafe targets, and obfuscated URL protocols.
 - External destinations must use HTTP or HTTPS and require an explicit confirmation step.
 - File extension checks are enforced server-side for resource creation, editing, and version updates; the browser file filter is only an additional usability aid.
 - The permanent dangerous-extension denylist is enforced independently of the saved administrator whitelist.

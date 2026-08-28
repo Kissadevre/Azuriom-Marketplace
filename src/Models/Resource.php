@@ -38,6 +38,7 @@ class Resource extends Model
     public function comments() { return $this->hasMany(Comment::class)->latest(); }
     public function ratings() { return $this->hasMany(Rating::class); }
     public function purchases() { return $this->hasMany(Purchase::class); }
+    public function follows() { return $this->hasMany(ResourceFollow::class); }
     public function images() { return $this->hasMany(ResourceImage::class); }
     public function tags()
     {

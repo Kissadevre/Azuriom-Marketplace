@@ -25,6 +25,8 @@ class ResourceController extends Controller
         abort_unless($this->canView($request, $resource), 403);
         $resource->load(['author', 'category', 'tags', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
         $resource->comments->loadCount('likes');
+        $isFollowing = $request->user() !== null
+            && $resource->follows()->where('user_id', $request->user()->id)->exists();
         $likedCommentIds = $request->user()
             ? CommentLike::query()
                 ->where('user_id', $request->user()->id)
@@ -47,7 +49,7 @@ class ResourceController extends Controller
             ->limit(4)
             ->get();
 
-        return view('marketplace::resources.show', compact('resource', 'relatedResources', 'likedCommentIds'));
+        return view('marketplace::resources.show', compact('resource', 'relatedResources', 'likedCommentIds', 'isFollowing'));
     }
 
     public function banner(Request $request, Resource $resource)

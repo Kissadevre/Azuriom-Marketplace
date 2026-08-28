@@ -186,6 +186,11 @@
                         @elseif($resource->status === 'published' && $resource->price <= 0 && ! setting('marketplace.require_login_for_free_downloads', true))<a class="btn btn-success w-100" href="{{ route('marketplace.resources.download', $resource) }}">@lang('marketplace::messages.get_resource')</a>
                         @else<a href="{{ route('login') }}" class="btn btn-primary w-100">@lang('marketplace::messages.login_to_download')</a>@endif
                     @endauth
+                    @auth
+                        @if($resource->status === 'published' && $resource->price <= 0 && ! $resource->isOwnedBy(auth()->user()))
+                            <form method="POST" action="{{ route('marketplace.resources.follow', $resource) }}" class="mt-3">@csrf<button class="btn {{ $isFollowing ? 'btn-primary' : 'btn-outline-primary' }} w-100"><i class="bi bi-bell{{ $isFollowing ? '-fill' : '' }} me-1" aria-hidden="true"></i>@lang($isFollowing ? 'marketplace::messages.follow.unfollow' : 'marketplace::messages.follow.follow')</button></form>
+                        @endif
+                    @endauth
                 </div>
             </div>
 

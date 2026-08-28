@@ -43,6 +43,10 @@ The plugin includes category access controls, content moderation, reporting tool
 - Paid resources are unlocked with the Azuriom site currency.
 - Purchases transfer coins from the buyer to the resource author inside a database transaction.
 - Purchasing a resource unlocks its download, comments, and ratings.
+- Purchased resources are collected in a personal library and receive new-version notifications.
+- Users can follow free resources to receive the same update notifications.
+- Paid-resource authors can generate hashed, limited-use gift codes containing one or more of their resources.
+- Gift-code redemptions grant zero-price purchase records without transferring coins.
 - Paid-resource comments and ratings require a purchase record; ownership or staff download bypasses do not grant interaction access.
 - Authorized staff can download paid resources without purchasing them.
 

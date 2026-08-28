@@ -1,0 +1,17 @@
+<?php
+namespace Azuriom\Plugin\Marketplace\Controllers;
+use Azuriom\Http\Controllers\Controller;
+use Azuriom\Plugin\Marketplace\Models\GiftCode;
+use Azuriom\Plugin\Marketplace\Models\Purchase;
+use Azuriom\Plugin\Marketplace\Models\Resource;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+class GiftCodeController extends Controller
+{
+ public function index(Request $request) { $paidResources=Resource::query()->published()->where('user_id',$request->user()->id)->where('price','>',0)->orderBy('name')->get(); $codes=GiftCode::where('user_id',$request->user()->id)->with('resources')->withCount('redemptions')->latest()->get(); return view('marketplace::gift-codes.index',compact('paidResources','codes')); }
+ public function store(Request $request) { $data=$request->validate(['resources'=>['required','array','min:1','max:50'],'resources.*'=>['integer','distinct',Rule::exists('marketplace_resources','id')->where(fn($q)=>$q->where('user_id',$request->user()->id)->where('price','>',0)->where('status','published')->whereNull('archived_at'))],'usage_limit'=>['required','integer','min:1','max:100000'],'expires_at'=>['nullable','date','after:now']]); abort_unless(Resource::published()->where('user_id',$request->user()->id)->where('price','>',0)->exists(),403); do { $plain=implode('-',str_split(Str::upper(Str::random(20)),5)); $normalized=str_replace('-','',$plain); $hash=hash('sha256',$normalized); } while(GiftCode::where('code_hash',$hash)->exists()); $code=DB::transaction(function()use($request,$data,$hash,$normalized){$code=GiftCode::create(['user_id'=>$request->user()->id,'code_hash'=>$hash,'code_hint'=>'…'.substr($normalized,-4),'usage_limit'=>$data['usage_limit'],'expires_at'=>$data['expires_at']??null]);$code->resources()->sync($data['resources']);return $code;}); return back()->with('success',trans('marketplace::messages.gift_codes.created'))->with('gift_code',$plain); }
+ public function redeem(Request $request) { $data=$request->validate(['code'=>['required','string','max:100']]); $normalized=Str::upper(preg_replace('/[^A-Za-z0-9]/','',$data['code'])); DB::transaction(function()use($request,$normalized){$code=GiftCode::where('code_hash',hash('sha256',$normalized))->lockForUpdate()->first(); if(!$code||($code->expires_at&&$code->expires_at->isPast()))throw ValidationException::withMessages(['code'=>trans('marketplace::messages.gift_codes.invalid')]); if((int)$code->user_id===(int)$request->user()->id||$code->redemptions()->where('user_id',$request->user()->id)->exists()||$code->redemptions()->count()>=$code->usage_limit)throw ValidationException::withMessages(['code'=>trans('marketplace::messages.gift_codes.unavailable')]); $resources=$code->resources()->published()->where('price','>',0)->where('user_id',$code->user_id)->get()->reject(fn($resource)=>$resource->isOwnedBy($request->user())||Purchase::where('resource_id',$resource->id)->where('user_id',$request->user()->id)->exists()); if($resources->isEmpty())throw ValidationException::withMessages(['code'=>trans('marketplace::messages.gift_codes.nothing_to_grant')]); foreach($resources as $resource)Purchase::create(['resource_id'=>$resource->id,'user_id'=>$request->user()->id,'price'=>0]); $code->redemptions()->create(['user_id'=>$request->user()->id]); }); return back()->with('success',trans('marketplace::messages.gift_codes.redeemed')); }
+}

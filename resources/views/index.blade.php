@@ -60,6 +60,7 @@
                         @endif
                         @auth
                             <a href="{{ route('marketplace.resources.purchased', ['sort' => $sort]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 @if($purchased) active @endif"><span class="text-truncate"><i class="bi bi-bag-check marketplace-category-icon me-2"></i>@lang('marketplace::messages.purchased_resources')</span><span class="badge rounded-pill {{ $purchased ? 'bg-light text-dark' : 'bg-secondary' }}">{{ $purchasedResourcesCount }}</span></a>
+                            <a href="{{ route('marketplace.gift-codes.index') }}" class="list-group-item list-group-item-action"><i class="bi bi-gift marketplace-category-icon me-2"></i>@lang('marketplace::messages.gift_codes.title')</a>
                         @endauth
                         @foreach($categories as $item)
                             <a href="{{ route('marketplace.categories.show', ['category' => $item, 'sort' => $sort]) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2 @if(isset($category) && $category->is($item)) active @endif"><span class="text-truncate"><i class="{{ $item->icon }} marketplace-category-icon me-2"></i>{{ $item->name }}</span><span class="badge rounded-pill {{ isset($category) && $category->is($item) ? 'bg-light text-dark' : 'bg-secondary' }}">{{ $item->resources_count }}</span></a>

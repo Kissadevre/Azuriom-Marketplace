@@ -37,7 +37,7 @@
             <div class="card marketplace-form-card">
                 <div class="card-header"><strong><i class="bi bi-sliders me-2" aria-hidden="true"></i>@lang('marketplace::messages.fields.category')</strong></div>
                 <div class="card-body">
-                    <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.category')</label><select name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
+                    <div class="mb-3"><label class="form-label" for="resourceCategory">@lang('marketplace::messages.fields.category')</label><select id="resourceCategory" name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
                     <div><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control @error('version') is-invalid @enderror" name="version" maxlength="8" pattern="[A-Za-z0-9._-]+" value="{{ old('version',$resource->version??'') }}" required data-character-counter="versionCounter">@error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="versionCounter">0</span>/8</small></div></div>
                 </div>
             </div>
@@ -47,7 +47,8 @@
                 <div class="card-body">
                     @php($selectedTags = array_map('intval', old('tags', isset($resource) ? $resource->tags->pluck('id')->all() : [])))
                     @if($tags->isNotEmpty())
-                        <div class="d-grid gap-2">@foreach($tags as $tag)<label class="marketplace-tag-option form-check border rounded-3 p-3 ps-5"><input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags, true))><span class="d-flex align-items-center gap-2"><span class="rounded-circle border flex-shrink-0" style="width: .875rem; height: .875rem; background-color: {{ $tag->color }};"></span><span>{{ $tag->name }}</span></span></label>@endforeach</div>
+                        <div class="d-grid gap-2">@foreach($tags as $tag)<label class="marketplace-tag-option form-check border rounded-3 p-3 ps-5" data-tag-option data-category-id="{{ $tag->category_id }}"><input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags, true))><span class="d-flex align-items-center justify-content-between gap-2"><span class="d-flex align-items-center gap-2"><span class="rounded-circle border flex-shrink-0" style="width: .875rem; height: .875rem; background-color: {{ $tag->color }};"></span><span>{{ $tag->name }}</span></span><small class="text-muted">{{ $tag->category?->name ?? trans('marketplace::messages.tags.general') }}</small></span></label>@endforeach</div>
+                        <div id="marketplaceTagsEmpty" class="text-muted small" hidden>@lang('marketplace::messages.tags.empty_for_category')</div>
                     @else<div class="text-muted small">@lang('marketplace::messages.tags.empty')</div>@endif
                     @error('tags')<div class="text-danger small mt-1">{{ $message }}</div>@enderror @error('tags.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     <small class="form-text text-muted d-block mt-2">@lang('marketplace::messages.tags.optional_help')</small>
@@ -92,6 +93,29 @@
         const coinPriceGroup = document.getElementById('coinPriceGroup');
         const coinPrice = document.getElementById('coinPrice');
         const fileIsRequired = {{ isset($resource) && $resource->file_path ? 'false' : 'true' }};
+        const categoryInput = document.getElementById('resourceCategory');
+        const tagOptions = Array.from(document.querySelectorAll('[data-tag-option]'));
+        const tagsEmpty = document.getElementById('marketplaceTagsEmpty');
+
+        const updateTagOptions = () => {
+            let visibleTags = 0;
+
+            tagOptions.forEach((option) => {
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                const appliesToCategory = option.dataset.categoryId === ''
+                    || option.dataset.categoryId === categoryInput.value;
+
+                option.hidden = ! appliesToCategory;
+                checkbox.disabled = ! appliesToCategory;
+                if (! appliesToCategory) checkbox.checked = false;
+                if (appliesToCategory) visibleTags++;
+            });
+
+            if (tagsEmpty) tagsEmpty.hidden = visibleTags > 0;
+        };
+
+        categoryInput.addEventListener('change', updateTagOptions);
+        updateTagOptions();
 
         const updateDeliveryFields = () => {
             const usesFile = deliveryType.value === 'file';

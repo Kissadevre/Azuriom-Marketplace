@@ -12,7 +12,7 @@ class CategoryController extends Controller
     public function index()
     {
         return view('marketplace::admin.categories.index', [
-            'categories' => Category::withCount('resources')->orderBy('position')->get(),
+            'categories' => Category::withCount(['resources', 'tags'])->orderBy('position')->get(),
         ]);
     }
 
@@ -61,7 +61,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         abort_if(
-            $category->resources()->exists(),
+            $category->resources()->exists() || $category->tags()->exists(),
             422,
             trans('marketplace::admin.categories.not_empty')
         );

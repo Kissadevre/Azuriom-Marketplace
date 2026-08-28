@@ -74,9 +74,11 @@ class ResourceController extends Controller
             trans('marketplace::messages.submissions_paused')
         );
 
+        $categories = $this->categories($request);
+
         return view('marketplace::resources.create', [
-            'categories' => $this->categories($request),
-            'tags' => $this->tags(),
+            'categories' => $categories,
+            'tags' => $this->tags($categories),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -110,11 +112,12 @@ class ResourceController extends Controller
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         $resource->load('tags');
+        $categories = $this->categories($request);
 
         return view('marketplace::resources.edit', [
             'resource' => $resource,
-            'categories' => $this->categories($request),
-            'tags' => $this->tags(),
+            'categories' => $categories,
+            'tags' => $this->tags($categories),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -216,9 +219,16 @@ class ResourceController extends Controller
             : $categories->filter->canAccess($request->user());
     }
 
-    private function tags()
+    private function tags($categories)
     {
-        return Tag::enabled()->orderBy('position')->orderBy('name')->get();
+        return Tag::enabled()
+            ->where(function ($query) use ($categories) {
+                $query->whereNull('category_id')->orWhereIn('category_id', $categories->modelKeys());
+            })
+            ->with('category')
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get();
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {

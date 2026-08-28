@@ -16,6 +16,7 @@ class Category extends Model
     protected $casts = ['roles' => 'array', 'is_enabled' => 'boolean'];
 
     public function resources() { return $this->hasMany(Resource::class); }
+    public function tags() { return $this->hasMany(Tag::class); }
     public function scopeEnabled(Builder $query): void { $query->where('is_enabled', true); }
     public function canAccess(?User $user): bool
     {

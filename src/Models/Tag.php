@@ -12,9 +12,14 @@ class Tag extends Model
 
     protected string $prefix = 'marketplace_';
 
-    protected $fillable = ['name', 'slug', 'description', 'color', 'position', 'is_enabled'];
+    protected $fillable = ['category_id', 'name', 'slug', 'description', 'color', 'position', 'is_enabled'];
 
-    protected $casts = ['is_enabled' => 'boolean'];
+    protected $casts = ['category_id' => 'integer', 'is_enabled' => 'boolean'];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     public function resources()
     {

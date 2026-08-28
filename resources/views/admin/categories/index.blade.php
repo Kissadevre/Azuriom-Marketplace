@@ -73,7 +73,7 @@
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('marketplace.admin.categories.edit', $category) }}" title="@lang('messages.actions.edit')" data-bs-toggle="tooltip">
                                 <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">@lang('messages.actions.edit')</span>
                             </a>
-                            @if($category->resources_count === 0)
+                            @if($category->resources_count === 0 && $category->tags_count === 0)
                                 <a class="btn btn-sm btn-outline-danger" href="{{ route('marketplace.admin.categories.destroy', $category) }}" title="@lang('messages.actions.delete')" data-bs-toggle="tooltip" data-confirm="delete">
                                     <i class="bi bi-trash" aria-hidden="true"></i><span class="visually-hidden">@lang('messages.actions.delete')</span>
                                 </a>

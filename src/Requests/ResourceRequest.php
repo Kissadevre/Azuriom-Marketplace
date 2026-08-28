@@ -19,7 +19,17 @@ class ResourceRequest extends FormRequest
         return [
             'category_id' => ['required', Rule::exists('marketplace_categories', 'id')->where('is_enabled', true)],
             'tags' => ['nullable', 'array', 'max:50'],
-            'tags.*' => ['integer', 'distinct', Rule::exists('marketplace_tags', 'id')->where('is_enabled', true)],
+            'tags.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('marketplace_tags', 'id')->where(function ($query) {
+                    $query->where('is_enabled', true)
+                        ->where(function ($scope) {
+                            $scope->whereNull('category_id')
+                                ->orWhere('category_id', $this->integer('category_id'));
+                        });
+                }),
+            ],
             'editor_upload_token' => ['required', 'uuid'],
             'name' => ['required', 'string', 'max:24', 'regex:/^[\pL\pN ]+$/u'],
             'version' => ['required', 'string', 'max:8', 'regex:/^[A-Za-z0-9._-]+$/'],
@@ -56,6 +66,7 @@ class ResourceRequest extends FormRequest
             'name.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
             'summary.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
             'version.regex' => trans('marketplace::messages.validation.version_format'),
+            'tags.*.exists' => trans('marketplace::messages.validation.tag_category'),
         ];
     }
 

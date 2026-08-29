@@ -7,9 +7,10 @@ use Azuriom\Models\Permission;
 use Azuriom\Plugin\Marketplace\Commands\CleanupEditorImages;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Azuriom\Plugin\Marketplace\Support\MarketplaceSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -22,6 +23,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
         $this->loadMigrations();
         $this->registerRouteDescriptions();
         $this->registerAdminNavigation();
+        $this->registerUserNavigation();
         $this->registerMarketplaceRateLimiters();
 
         $this->commands(CleanupEditorImages::class);
@@ -114,6 +116,23 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
                     'marketplace.admin.restrictions.index' => trans('marketplace::admin.restrictions.title'),
                     'marketplace.admin.settings.edit' => trans('marketplace::admin.settings.title'),
                 ],
+            ],
+        ];
+    }
+
+    protected function userNavigation(): array
+    {
+        $settings = $this->app->make(MarketplaceSettings::class);
+
+        if (! $settings->showInUserMenu()) {
+            return [];
+        }
+
+        return [
+            'marketplace' => [
+                'route' => 'marketplace.index',
+                'name' => trans('marketplace::messages.title'),
+                'icon' => 'bi '.$settings->userMenuIcon(),
             ],
         ];
     }

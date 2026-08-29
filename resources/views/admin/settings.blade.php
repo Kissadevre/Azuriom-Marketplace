@@ -66,6 +66,31 @@
     </div>
 
     <div class="card mb-4">
+        <div class="card-header"><strong><i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>@lang('marketplace::admin.settings.user_menu')</strong></div>
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between gap-4 mb-4">
+                <label for="userMenuEnabled" class="mb-0">
+                    <span class="d-block fw-semibold">@lang('marketplace::admin.settings.user_menu_enabled')</span>
+                    <small class="text-muted">@lang('marketplace::admin.settings.user_menu_enabled_help')</small>
+                </label>
+                <div class="form-check form-switch fs-4 mb-0">
+                    <input type="hidden" name="user_menu_enabled" value="0">
+                    <input class="form-check-input" type="checkbox" name="user_menu_enabled" value="1" id="userMenuEnabled" @checked(old('user_menu_enabled', $showInUserMenu))>
+                </div>
+            </div>
+            <div style="max-width: 36rem;">
+                <label class="form-label fw-semibold" for="userMenuIcon">@lang('marketplace::admin.settings.user_menu_icon')</label>
+                <div class="input-group @error('user_menu_icon') has-validation @enderror">
+                    <span class="input-group-text" aria-hidden="true"><i class="bi {{ old('user_menu_icon', $userMenuIcon) }}" id="userMenuIconPreview"></i></span>
+                    <input type="text" class="form-control font-monospace @error('user_menu_icon') is-invalid @enderror" id="userMenuIcon" name="user_menu_icon" value="{{ old('user_menu_icon', $userMenuIcon) }}" maxlength="64" pattern="bi-[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="bi-shop" autocomplete="off" required>
+                    @error('user_menu_icon')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                </div>
+                <small class="form-text text-muted">{!! trans('marketplace::admin.settings.user_menu_icon_help') !!}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
         <div class="card-header"><strong><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>@lang('marketplace::admin.rate_limits.title')</strong></div>
         <div class="card-body">
             <p class="text-muted">@lang('marketplace::admin.rate_limits.help')</p>
@@ -138,6 +163,17 @@
 
 @push('footer-scripts')
 <script>
+    const userMenuIconInput = document.getElementById('userMenuIcon');
+    const userMenuIconPreview = document.getElementById('userMenuIconPreview');
+
+    userMenuIconInput.addEventListener('input', () => {
+        const icon = userMenuIconInput.value.trim().toLowerCase();
+
+        userMenuIconPreview.className = /^bi-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(icon)
+            ? `bi ${icon}`
+            : 'bi bi-question-circle';
+    });
+
     document.querySelectorAll('[data-integer-only]').forEach((input) => {
         input.addEventListener('keydown', (event) => {
             const hasModifier = event.ctrlKey || event.metaKey || event.altKey;

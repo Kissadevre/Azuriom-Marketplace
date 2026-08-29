@@ -1,6 +1,7 @@
 @extends('admin.layouts.admin')
 @section('title',trans('marketplace::admin.settings.title'))
 @section('content')
+@include('marketplace::_breadcrumbs', ['admin' => true, 'items' => [['label' => trans('marketplace::admin.settings.title')]]])
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="card h-100"><div class="card-body d-flex align-items-center justify-content-between gap-3">

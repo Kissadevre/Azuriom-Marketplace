@@ -3,6 +3,7 @@
 @section('title', trans('marketplace::admin.restrictions.title'))
 
 @section('content')
+@include('marketplace::_breadcrumbs', ['admin' => true, 'items' => [['label' => trans('marketplace::admin.restrictions.title')]]])
 <div class="d-flex align-items-center gap-3 mb-4">
     <span class="d-flex align-items-center justify-content-center rounded bg-warning bg-opacity-10 text-warning fs-3" style="width: 3rem; height: 3rem;"><i class="bi bi-person-lock" aria-hidden="true"></i></span>
     <div><h1 class="h3 mb-1">@lang('marketplace::admin.restrictions.title')</h1><p class="text-muted mb-0">@lang('marketplace::admin.restrictions.description')</p></div>

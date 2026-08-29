@@ -3,6 +3,7 @@
 @section('title', trans('marketplace::admin.reports.title'))
 
 @section('content')
+@include('marketplace::_breadcrumbs', ['admin' => true, 'items' => [['label' => trans('marketplace::admin.reports.title')]]])
 <div class="d-flex align-items-center gap-3 mb-4">
     <span class="d-flex align-items-center justify-content-center rounded bg-danger bg-opacity-10 text-danger fs-3" style="width: 3rem; height: 3rem;">
         <i class="bi bi-flag" aria-hidden="true"></i>

@@ -37,6 +37,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Administrative resource lists per category.
 - Sorting by recently updated, download count, or highest rating.
 - Permission-controlled resource pinning that takes precedence over every listing sort.
+- Consistent public and administrative breadcrumb navigation across Marketplace pages.
 
 ### Free and paid resources
 

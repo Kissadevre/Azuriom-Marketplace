@@ -37,6 +37,7 @@
 @section('content')
 @php($updatesTabActive = $errors->hasAny(['version', 'description', 'file', 'external_url']))
 <div class="container content">
+    @include('marketplace::_breadcrumbs', ['items' => [['label' => $resource->category->name, 'url' => route('marketplace.categories.show', $resource->category)], ['label' => $resource->name]]])
     <div class="row g-4">
         <main class="col-lg-8">
             <header class="marketplace-resource-header d-flex flex-column flex-md-row justify-content-between gap-4 mb-4">

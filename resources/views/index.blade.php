@@ -27,6 +27,7 @@
 
 @section('content')
 <div class="container content">
+    @include('marketplace::_breadcrumbs', ['items' => isset($category) ? [['label' => $category->name]] : ($mine ? [['label' => trans('marketplace::messages.my_resources')]] : ($purchased ? [['label' => trans('marketplace::messages.purchased_resources')]] : []) )])
     <section class="marketplace-hero rounded-4 p-4 p-lg-5 mb-4">
         <div class="position-relative d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4" style="z-index: 1;">
             <div>

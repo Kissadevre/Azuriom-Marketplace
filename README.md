@@ -147,7 +147,7 @@ The plugin registers and runs its database migration through Azuriom's plugin li
 
 ## Development database reset
 
-Marketplace keeps each table in its own migration file under `database/migrations`. The filenames are ordered so referenced tables are created before their dependants and rolled back in reverse order.
+Marketplace ships its first public database schema as a single baseline migration under `database/migrations`. Any database changes made after this release must be added as new, separately dated migration files; the public baseline must not be edited.
 
 During development, if these migrations have already run and the schema files were modified, roll back only the Marketplace migrations and run them again from the Azuriom root:
 
@@ -180,7 +180,7 @@ Marketplace currently includes:
 
 ```text
 marketplace/
-├── database/migrations/   # Ordered Marketplace schema migrations
+├── database/migrations/   # Public schema baseline and future incremental migrations
 ├── resources/lang/        # English and Spanish translations
 ├── resources/views/       # Public and administration Blade views
 ├── routes/                # Public and administration routes

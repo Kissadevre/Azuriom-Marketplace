@@ -34,6 +34,7 @@
 
     <aside class="col-lg-4">
         <div class="marketplace-form-sidebar d-grid gap-4">
+            @can('marketplace.pin')<div class="card marketplace-form-card border-primary"><div class="card-body"><div class="form-check form-switch"><input type="hidden" name="is_pinned" value="0"><input class="form-check-input" type="checkbox" role="switch" id="pinnedResource" name="is_pinned" value="1" @checked(old('is_pinned', isset($resource) && $resource->pinned_at !== null))><label class="form-check-label fw-semibold" for="pinnedResource"><i class="bi bi-pin-angle-fill me-1" aria-hidden="true"></i>@lang('marketplace::messages.pin.label')</label><small class="form-text text-muted d-block mt-1">@lang('marketplace::messages.pin.help')</small></div></div></div>@endcan
             <div class="card marketplace-form-card">
                 <div class="card-header"><strong><i class="bi bi-sliders me-2" aria-hidden="true"></i>@lang('marketplace::messages.fields.category')</strong></div>
                 <div class="card-body">

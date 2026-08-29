@@ -157,6 +157,9 @@ class HomeController extends Controller
 
     private function applySorting(Builder $query, string $sort): Builder
     {
+        $query->orderByRaw('CASE WHEN marketplace_resources.pinned_at IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('marketplace_resources.pinned_at');
+
         return match ($sort) {
             'downloads' => $query
                 ->orderByDesc('marketplace_resources.downloads')

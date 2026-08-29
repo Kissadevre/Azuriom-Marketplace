@@ -36,6 +36,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Resource counters for each category.
 - Administrative resource lists per category.
 - Sorting by recently updated, download count, or highest rating.
+- Permission-controlled resource pinning that takes precedence over every listing sort.
 
 ### Free and paid resources
 

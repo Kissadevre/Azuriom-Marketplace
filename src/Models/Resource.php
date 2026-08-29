@@ -13,8 +13,8 @@ class Resource extends Model
 {
     use HasTablePrefix;
     protected string $prefix = 'marketplace_';
-    protected $fillable = ['category_id', 'user_id', 'name', 'version', 'summary', 'description', 'banner_path', 'delivery_type', 'file_path', 'external_url', 'price', 'status', 'moderation_note', 'published_at', 'paused_at', 'archived_at'];
-    protected $casts = ['price' => 'float', 'published_at' => 'datetime', 'paused_at' => 'datetime', 'archived_at' => 'datetime'];
+    protected $fillable = ['category_id', 'user_id', 'name', 'version', 'summary', 'description', 'banner_path', 'delivery_type', 'file_path', 'external_url', 'price', 'status', 'moderation_note', 'published_at', 'pinned_at', 'paused_at', 'archived_at'];
+    protected $casts = ['price' => 'float', 'published_at' => 'datetime', 'pinned_at' => 'datetime', 'paused_at' => 'datetime', 'archived_at' => 'datetime'];
 
     protected static function booted(): void
     {

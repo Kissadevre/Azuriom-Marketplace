@@ -37,6 +37,7 @@ class MarketplaceServiceProvider extends BasePluginServiceProvider
             'marketplace.archive' => 'marketplace::admin.permissions.archive',
             'marketplace.pause' => 'marketplace::admin.permissions.pause',
             'marketplace.edit' => 'marketplace::admin.permissions.edit',
+            'marketplace.pin' => 'marketplace::admin.permissions.pin',
             'marketplace.delete' => 'marketplace::admin.permissions.delete',
             'marketplace.delete-comments' => 'marketplace::admin.permissions.delete_comments',
             'marketplace.reset-ratings' => 'marketplace::admin.permissions.reset_ratings',

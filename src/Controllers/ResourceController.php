@@ -238,7 +238,10 @@ class ResourceController extends Controller
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid']);
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid', 'is_pinned']);
+        if ($request->user()->can('marketplace.pin')) {
+            $data['pinned_at'] = $request->boolean('is_pinned') ? ($resource?->pinned_at ?? now()) : null;
+        }
         $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
 
         if ($data['description'] === '') {

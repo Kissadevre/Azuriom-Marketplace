@@ -19,6 +19,8 @@ class TagRequest extends FormRequest
 
         return [
             'category_id' => ['nullable', 'integer', Rule::exists('marketplace_categories', 'id')],
+            'publish_roles' => ['nullable', 'array'],
+            'publish_roles.*' => ['integer', Rule::exists('roles', 'id')],
             'name' => ['required', 'string', 'max:100'],
             'slug' => ['required', 'alpha_dash', 'max:100', Rule::unique('marketplace_tags')->ignore($id)],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -32,6 +34,7 @@ class TagRequest extends FormRequest
     {
         $this->merge([
             'category_id' => $this->filled('category_id') ? $this->integer('category_id') : null,
+            'publish_roles' => $this->boolean('restrict_publishing') ? $this->input('publish_roles', []) : null,
             'is_enabled' => $this->boolean('is_enabled'),
         ]);
     }

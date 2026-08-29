@@ -3,6 +3,7 @@
 namespace Azuriom\Plugin\Marketplace\Controllers\Admin;
 
 use Azuriom\Http\Controllers\Controller;
+use Azuriom\Models\Role;
 use Azuriom\Plugin\Marketplace\Models\Category;
 use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\TagRequest;
@@ -20,6 +21,7 @@ class TagController extends Controller
     {
         return view('marketplace::admin.tags.create', [
             'categories' => Category::orderBy('position')->orderBy('name')->get(),
+            'roles' => Role::orderByDesc('power')->get(),
         ]);
     }
 
@@ -36,6 +38,7 @@ class TagController extends Controller
         return view('marketplace::admin.tags.edit', [
             'tag' => $tag,
             'categories' => Category::orderBy('position')->orderBy('name')->get(),
+            'roles' => Role::orderByDesc('power')->get(),
         ]);
     }
 

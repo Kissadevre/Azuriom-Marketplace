@@ -42,6 +42,8 @@
     </div>
 </div>
 
+<div class="card mb-4"><div class="card-header"><strong>@lang('marketplace::publishing.category_title')</strong></div><div class="card-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" name="restrict_publishing" value="1" id="restrictCategoryPublishing" @checked(old('restrict_publishing', isset($category) && $category->publish_roles !== null))><label class="form-check-label fw-semibold" for="restrictCategoryPublishing">@lang('marketplace::publishing.restrict')</label><small class="form-text text-muted d-block">@lang('marketplace::publishing.category_help')</small></div><div id="categoryPublishRoles" class="row g-2">@foreach($roles as $role)<div class="col-sm-6 col-lg-4"><label class="form-check border rounded p-3 ps-5 h-100"><input class="form-check-input category-publish-role" type="checkbox" name="publish_roles[]" value="{{ $role->id }}" @checked(in_array($role->id,array_map('intval',old('publish_roles',isset($category)?($category->publish_roles??[]):[])),true))><span class="badge" style="{{ $role->getBadgeStyle() }}">{{ $role->name }}</span></label></div>@endforeach</div>@error('publish_roles')<div class="text-danger small mt-2">{{ $message }}</div>@enderror</div></div>
+
 <div class="card mb-4">
     <div class="card-header"><strong>@lang('marketplace::admin.categories.access_settings')</strong></div>
     <div class="card-body">
@@ -97,6 +99,9 @@
         const iconInput = document.getElementById('categoryIcon');
         const iconPreview = document.getElementById('categoryIconPreview');
         const positionInput = document.getElementById('categoryPosition');
+        const restrictPublishing = document.getElementById('restrictCategoryPublishing');
+        const publishRoles = document.getElementById('categoryPublishRoles');
+        const publishRoleInputs = publishRoles.querySelectorAll('.category-publish-role');
 
         const updateRoles = () => {
             roles.hidden = ! privateCategory.checked;
@@ -104,11 +109,14 @@
         };
 
         privateCategory.addEventListener('change', updateRoles);
+        const updatePublishRoles = () => { publishRoles.hidden = ! restrictPublishing.checked; publishRoleInputs.forEach((input) => input.disabled = ! restrictPublishing.checked); };
+        restrictPublishing.addEventListener('change', updatePublishRoles);
         iconInput.addEventListener('input', () => iconPreview.className = iconInput.value || 'bi bi-box');
         positionInput.addEventListener('input', () => {
             positionInput.value = positionInput.value.replace(/[^0-9]/g, '');
         });
         updateRoles();
+        updatePublishRoles();
     });
 </script>
 @endpush

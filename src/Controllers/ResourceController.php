@@ -80,7 +80,7 @@ class ResourceController extends Controller
 
         return view('marketplace::resources.create', [
             'categories' => $categories,
-            'tags' => $this->tags($categories),
+            'tags' => $this->tags($categories, $request),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -94,7 +94,9 @@ class ResourceController extends Controller
         );
 
         abort_unless(
-            Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
+            $request->user()->can('marketplace.edit')
+            || (($category = Category::findOrFail($request->integer('category_id')))->canAccess($request->user())
+                && $category->canPublish($request->user())),
             403
         );
         $data = $this->payload($request);
@@ -119,7 +121,7 @@ class ResourceController extends Controller
         return view('marketplace::resources.edit', [
             'resource' => $resource,
             'categories' => $categories,
-            'tags' => $this->tags($categories),
+            'tags' => $this->tags($categories, $request),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -129,7 +131,8 @@ class ResourceController extends Controller
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         abort_unless(
             $request->user()->can('marketplace.edit')
-            || Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
+            || (($category = Category::findOrFail($request->integer('category_id')))->canAccess($request->user())
+                && $category->canPublish($request->user())),
             403
         );
         $data = $this->payload($request, $resource);
@@ -218,10 +221,10 @@ class ResourceController extends Controller
 
         return $request->user()->can('marketplace.edit')
             ? $categories
-            : $categories->filter->canAccess($request->user());
+            : $categories->filter(fn (Category $category) => $category->canAccess($request->user()) && $category->canPublish($request->user()));
     }
 
-    private function tags($categories)
+    private function tags($categories, Request $request)
     {
         return Tag::enabled()
             ->where(function ($query) use ($categories) {
@@ -230,7 +233,8 @@ class ResourceController extends Controller
             ->with('category')
             ->orderBy('position')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->when(! $request->user()->can('marketplace.edit'), fn ($tags) => $tags->filter(fn (Tag $tag) => $tag->canUse($request->user())));
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {

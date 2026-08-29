@@ -31,6 +31,7 @@ The plugin includes category access controls, content moderation, reporting tool
 - Administrator-managed categories with icons, descriptions, ordering, and enabled status.
 - Administrator-managed global or category-specific tags with descriptions, colors, ordering, and enabled status.
 - Optional category access restrictions by Azuriom role.
+- Independent role restrictions for publishing in categories and assigning tags.
 - Optional many-to-many tag assignment when creating or editing resources.
 - Resource counters for each category.
 - Administrative resource lists per category.

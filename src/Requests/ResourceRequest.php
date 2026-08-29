@@ -3,10 +3,13 @@
 namespace Azuriom\Plugin\Marketplace\Requests;
 
 use Azuriom\Plugin\Marketplace\Rules\AllowedResourceExtension;
+use Azuriom\Plugin\Marketplace\Models\Category;
+use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ResourceRequest extends FormRequest
 {
@@ -58,6 +61,17 @@ class ResourceRequest extends FormRequest
             'summary' => Str::squish(strip_tags((string) $this->input('summary', ''))),
             'version' => trim(strip_tags((string) $this->input('version', ''))),
         ]);
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($this->user()?->can('marketplace.edit')) return;
+            $category = Category::find($this->integer('category_id'));
+            if ($category && ! $category->canPublish($this->user())) $validator->errors()->add('category_id', trans('marketplace::messages.validation.category_publish_role'));
+            $forbiddenTag = Tag::query()->whereIn('id', (array) $this->input('tags', []))->get()->first(fn (Tag $tag) => ! $tag->canUse($this->user()));
+            if ($forbiddenTag) $validator->errors()->add('tags', trans('marketplace::messages.validation.tag_publish_role'));
+        });
     }
 
     public function messages(): array

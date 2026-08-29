@@ -23,7 +23,7 @@ class ResourceEditorImageProcessor
         [$width, $height] = $details;
         if ($width < 1 || $height < 1 || $width > 4096 || $height > 4096 || $width * $height > self::MAX_PIXELS) {
             throw ValidationException::withMessages([
-                'image' => trans('marketplace::messages.editor_images.dimensions'),
+                'file' => trans('marketplace::messages.editor_images.dimensions'),
             ]);
         }
 
@@ -102,7 +102,7 @@ class ResourceEditorImageProcessor
     private function invalid(): never
     {
         throw ValidationException::withMessages([
-            'image' => trans('marketplace::messages.editor_images.invalid'),
+            'file' => trans('marketplace::messages.editor_images.invalid'),
         ]);
     }
 }

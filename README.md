@@ -18,8 +18,8 @@ The plugin includes category access controls, content moderation, reporting tool
 - Publish downloadable files or link to an external website.
 - Use UUID-based resource URLs, preventing collisions between resources with the same name.
 - Add a title, version, summary, rich description, banner, category, delivery method, and coin price.
-- Rich descriptions powered by TinyMCE and sanitized on the server before storage.
-- Direct JPG, PNG, and WebP uploads from TinyMCE with private storage, server-side re-encoding, access control, and orphan cleanup.
+- Rich descriptions written with Azuriom's native Markdown editor and rendered through its CommonMark configuration.
+- Direct JPG, PNG, and WebP uploads from the Markdown editor with private storage, server-side re-encoding, access control, and orphan cleanup.
 - Banner images displayed in resource cards and on the resource page.
 - Separate resource information and version-history tabs.
 - Publish new versions with a changelog without editing the resource description.
@@ -109,7 +109,7 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Require an account for free-resource downloads or allow guests to download them.
 - Configure the maximum resource file size.
 - Configure the resource file extension whitelist.
-- Configure TinyMCE image size and per-resource image limits.
+- Configure Markdown editor image size and per-resource image limits.
 - Apply, review, and lift per-user action restrictions with an optional expiration date and internal reason.
 
 ## Permissions
@@ -161,8 +161,8 @@ Do not use this reset workflow on a production installation containing Marketpla
 ## Security notes
 
 - Resource files and banners are stored on the private `local` filesystem disk and served through authorized controller actions.
-- Resource descriptions are sanitized with an explicit HTML element, attribute, and URL-protocol allowlist.
-- Source-code edits are filtered by TinyMCE and re-sanitized on the server, including malformed markup, active-content elements, event attributes, unsafe targets, and obfuscated URL protocols.
+- Resource descriptions are stored as Markdown and rendered with Azuriom CommonMark.
+- Raw HTML is escaped and unsafe links are rejected by Azuriom's CommonMark configuration, preventing descriptions from injecting active HTML or scripts.
 - External destinations must use HTTP or HTTPS and require an explicit confirmation step.
 - File extension checks are enforced server-side for resource creation, editing, and version updates; the browser file filter is only an additional usability aid.
 - The permanent dangerous-extension denylist is enforced independently of the saved administrator whitelist.
@@ -188,7 +188,7 @@ marketplace/
 ├── src/Models/            # Marketplace Eloquent models
 ├── src/Requests/          # Form request validation
 ├── src/Rules/             # Custom upload validation rules
-├── src/Support/           # HTML sanitization and file policies
+├── src/Support/           # Markdown image management and file policies
 ├── composer.json
 └── plugin.json
 ```

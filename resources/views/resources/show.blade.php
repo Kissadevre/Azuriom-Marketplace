@@ -103,7 +103,7 @@
             <div>
                 @if(! $updatesTabActive)
                 <div id="general-pane">
-                    <div class="card marketplace-content-card mb-4"><div class="card-body p-4 p-lg-5"><p class="lead fw-medium border-bottom pb-4 mb-4">{{ $resource->summary }}</p><div class="marketplace-resource-content">{!! $resource->description !!}</div></div></div>
+                    <div class="card marketplace-content-card mb-4"><div class="card-body p-4 p-lg-5"><p class="lead fw-medium border-bottom pb-4 mb-4">{{ $resource->summary }}</p><div class="marketplace-resource-content markdown-body">{!! $resource->parseMarkdown('description') !!}</div></div></div>
 
                     <div class="d-flex align-items-center gap-2 mb-3"><span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary" style="width: 2.5rem; height: 2.5rem;"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><h2 class="h4 mb-0">@lang('marketplace::messages.comments')</h2><span class="badge bg-secondary rounded-pill">{{ $resource->comments->count() }}</span></div>
                     @if(setting('marketplace.pause_comments', false))

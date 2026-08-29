@@ -5,15 +5,17 @@ namespace Azuriom\Plugin\Marketplace\Support;
 use Azuriom\Models\User;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\ResourceImage;
-use DOMDocument;
-use DOMElement;
 use Illuminate\Validation\ValidationException;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
+use League\CommonMark\Parser\MarkdownParser;
 
 class ResourceEditorImageManager
 {
-    public function assertWithinLimit(?Resource $resource, User $user, string $draftToken, string $html): void
+    public function assertWithinLimit(?Resource $resource, User $user, string $draftToken, string $markdown): void
     {
-        $uuids = $this->referencedUuids($html);
+        $uuids = $this->referencedUuids($markdown);
         $query = ResourceImage::query()->whereIn('uuid', $uuids)->where(function ($query) use ($resource, $user, $draftToken) {
             $query->where(function ($query) use ($user, $draftToken) {
                 $query->whereNull('resource_id')
@@ -34,10 +36,10 @@ class ResourceEditorImageManager
         }
     }
 
-    public function synchronize(Resource $resource, User $user, string $draftToken, string $html): void
+    public function synchronize(Resource $resource, User $user, string $draftToken, string $markdown): void
     {
-        $this->assertWithinLimit($resource, $user, $draftToken, $html);
-        $uuids = $this->referencedUuids($html);
+        $this->assertWithinLimit($resource, $user, $draftToken, $markdown);
+        $uuids = $this->referencedUuids($markdown);
         $temporary = ResourceImage::query()
             ->whereNull('resource_id')
             ->where('user_id', $user->id)
@@ -66,29 +68,26 @@ class ResourceEditorImageManager
     }
 
     /** @return array<int, string> */
-    private function referencedUuids(string $html): array
+    private function referencedUuids(string $markdown): array
     {
-        if (trim($html) === '') {
+        if (trim($markdown) === '') {
             return [];
         }
 
-        $document = new DOMDocument('1.0', 'UTF-8');
-        $previous = libxml_use_internal_errors(true);
-        $document->loadHTML('<?xml encoding="utf-8" ?>'.$html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
+        $environment = (new Environment)->addExtension(new CommonMarkCoreExtension);
+        $document = (new MarkdownParser($environment))->parse($markdown);
 
         $marker = '00000000-0000-4000-8000-000000000000';
         $routePath = route('marketplace.editor-images.show', ['resourceImage' => $marker], false);
         $prefix = substr($routePath, 0, -strlen($marker));
         $uuids = [];
 
-        foreach ($document->getElementsByTagName('img') as $image) {
-            if (! $image instanceof DOMElement) {
+        foreach ($document->iterator() as $node) {
+            if (! $node instanceof Image) {
                 continue;
             }
 
-            $path = parse_url(html_entity_decode($image->getAttribute('src')), PHP_URL_PATH);
+            $path = parse_url($node->getUrl(), PHP_URL_PATH);
             if (! is_string($path) || ! str_starts_with($path, $prefix)) {
                 continue;
             }

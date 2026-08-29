@@ -22,7 +22,7 @@ class ResourceEditorImageController extends Controller
         $maximumImages = min(max((int) setting('marketplace.max_editor_images', 20), 1), 100);
         $data = $request->validate([
             'draft_token' => ['required', 'uuid'],
-            'image' => [
+            'file' => [
                 'required',
                 'file',
                 'mimes:jpg,jpeg,png,webp',
@@ -40,14 +40,14 @@ class ResourceEditorImageController extends Controller
         if ((clone $draftQuery)->where('draft_token', $data['draft_token'])->count() >= $maximumImages
             || (clone $draftQuery)->count() >= $maximumImages * 3) {
             throw ValidationException::withMessages([
-                'image' => trans('marketplace::messages.editor_images.too_many', ['count' => $maximumImages]),
+                'file' => trans('marketplace::messages.editor_images.too_many', ['count' => $maximumImages]),
             ]);
         }
 
-        $processed = $processor->process($request->file('image'));
+        $processed = $processor->process($request->file('file'));
         if (strlen($processed['contents']) > $maximumSize * 1024) {
             throw ValidationException::withMessages([
-                'image' => trans('marketplace::messages.editor_images.too_large', ['size' => $maximumSize]),
+                'file' => trans('marketplace::messages.editor_images.too_large', ['size' => $maximumSize]),
             ]);
         }
 

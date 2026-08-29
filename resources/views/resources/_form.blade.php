@@ -1,5 +1,5 @@
 @csrf
-<input type="hidden" id="editorUploadToken" name="editor_upload_token" value="{{ old('editor_upload_token', $editorUploadToken) }}">
+<input type="hidden" name="editor_upload_token" value="{{ old('editor_upload_token', $editorUploadToken) }}">
 @push('styles')
 <style>
     .marketplace-form-card { border-radius: 1rem; }
@@ -10,7 +10,6 @@
     .marketplace-tag-option:hover { border-color: rgba(var(--bs-primary-rgb), .45) !important; background: rgba(var(--bs-primary-rgb), .04); }
     .marketplace-banner-preview { width: 100%; aspect-ratio: 16 / 8.5; object-fit: cover; }
     .marketplace-summary-input { resize: none; }
-    .marketplace-editor-card .tox-tinymce { border-color: var(--bs-border-color); border-radius: .65rem; }
     @media (max-width: 991.98px) { .marketplace-form-sidebar { position: static; } }
 </style>
 @endpush
@@ -27,7 +26,7 @@
             <div class="card-body p-4">
                 <div class="mb-4"><label class="form-label fw-semibold">@lang('messages.fields.name')</label><input class="form-control form-control-lg @error('name') is-invalid @enderror" name="name" maxlength="24" pattern="[\p{L}\p{N} ]+" value="{{ old('name',$resource->name??'') }}" required data-character-counter="nameCounter">@error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="nameCounter">0</span>/24</small></div></div>
                 <div class="mb-4"><label class="form-label fw-semibold">@lang('marketplace::messages.fields.summary')</label><textarea class="marketplace-summary-input form-control @error('summary') is-invalid @enderror" name="summary" rows="3" maxlength="150" required data-character-counter="summaryCounter">{{ old('summary',$resource->summary??'') }}</textarea>@error('summary')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="summaryCounter">0</span>/150</small></div></div>
-                <div><label class="form-label fw-semibold" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control html-editor" rows="14" name="description">{{ old('description',$resource->description??'') }}</textarea><small class="form-text text-muted d-block mt-2"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::messages.editor.help')</small></div>
+                <div><label class="form-label fw-semibold" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control markdown-editor @error('description') is-invalid @enderror" rows="14" maxlength="50000" name="description" required>{{ old('description',$resource->description??'') }}</textarea>@error('description')<span class="invalid-feedback">{{ $message }}</span>@enderror<small class="form-text text-muted d-block mt-2"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::messages.editor.help')</small></div>
             </div>
         </div>
     </main>
@@ -167,4 +166,6 @@
     });
 </script>
 @endpush
-@include('marketplace::resources._editor')
+@include('elements.markdown-editor', [
+    'imagesUploadUrl' => route('marketplace.editor-images.store', ['draft_token' => $editorUploadToken]),
+])

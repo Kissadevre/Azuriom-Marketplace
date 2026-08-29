@@ -10,7 +10,6 @@ use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
-use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
 use Azuriom\Plugin\Marketplace\Support\ResourceEditorImageManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -242,16 +241,6 @@ class ResourceController extends Controller
         if ($request->user()->can('marketplace.pin')) {
             $data['pinned_at'] = $request->boolean('is_pinned') ? ($resource?->pinned_at ?? now()) : null;
         }
-        $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
-
-        if ($data['description'] === '') {
-            throw ValidationException::withMessages([
-                'description' => trans('validation.required', [
-                    'attribute' => trans('marketplace::messages.fields.description'),
-                ]),
-            ]);
-        }
-
         if ($request->hasFile('banner')) {
             $bannerPath = $request->file('banner')->store('marketplace/banners', 'local');
             if ($resource?->banner_path) {

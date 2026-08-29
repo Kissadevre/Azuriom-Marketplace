@@ -2,11 +2,13 @@
 
 use Azuriom\Plugin\Marketplace\Controllers\CommentController;
 use Azuriom\Plugin\Marketplace\Controllers\HomeController;
+use Azuriom\Plugin\Marketplace\Controllers\GiftCodeController;
 use Azuriom\Plugin\Marketplace\Controllers\ModerationController;
 use Azuriom\Plugin\Marketplace\Controllers\RatingController;
 use Azuriom\Plugin\Marketplace\Controllers\ReportController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceEditorImageController;
+use Azuriom\Plugin\Marketplace\Controllers\ResourceFollowController;
 use Azuriom\Plugin\Marketplace\Controllers\ResourceUpdateController;
 use Azuriom\Plugin\Marketplace\Http\Middleware\EnsureMarketplaceActionAllowed;
 use Illuminate\Support\Facades\Route;
@@ -21,12 +23,17 @@ Route::get('/editor-images/{resourceImage:uuid}', [ResourceEditorImageController
 
 Route::middleware('auth')->group(function () {
     Route::get('/my-resources', [HomeController::class, 'mine'])->name('resources.mine');
+    Route::get('/purchased-resources', [HomeController::class, 'purchased'])->name('resources.purchased');
+    Route::get('/gift-codes', [GiftCodeController::class, 'index'])->name('gift-codes.index');
+    Route::post('/gift-codes', [GiftCodeController::class, 'store'])->name('gift-codes.store');
+    Route::post('/gift-codes/redeem', [GiftCodeController::class, 'redeem'])->name('gift-codes.redeem');
     Route::get('/submit', [ResourceController::class, 'create'])->middleware(['can:marketplace.publish', EnsureMarketplaceActionAllowed::class.':publish'])->name('resources.create');
     Route::post('/submit', [ResourceController::class, 'store'])->middleware(['can:marketplace.publish', EnsureMarketplaceActionAllowed::class.':publish', 'throttle:marketplace.publish', 'captcha'])->name('resources.store');
     Route::get('/resource/{resource:uuid}/edit', [ResourceController::class, 'edit'])->middleware(EnsureMarketplaceActionAllowed::class.':edit')->name('resources.edit');
     Route::put('/resource/{resource:uuid}', [ResourceController::class, 'update'])->middleware([EnsureMarketplaceActionAllowed::class.':edit', 'throttle:marketplace.edit', 'captcha'])->name('resources.update');
     Route::delete('/resource/{resource:uuid}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     Route::post('/resource/{resource:uuid}/purchase', [ResourceController::class, 'purchase'])->name('resources.purchase');
+    Route::post('/resource/{resource:uuid}/follow', [ResourceFollowController::class, 'toggle'])->name('resources.follow');
     Route::post('/resource/{resource:uuid}/comments', [CommentController::class, 'store'])->middleware([EnsureMarketplaceActionAllowed::class.':comment', 'throttle:marketplace.comment', 'captcha'])->name('comments.store');
     Route::post('/comments/{comment}/like', [CommentController::class, 'toggleLike'])->name('comments.likes.toggle');
     Route::post('/resource/{resource:uuid}/report', [ReportController::class, 'resource'])->name('resources.report');

@@ -3,10 +3,13 @@
 namespace Azuriom\Plugin\Marketplace\Requests;
 
 use Azuriom\Plugin\Marketplace\Rules\AllowedResourceExtension;
+use Azuriom\Plugin\Marketplace\Models\Category;
+use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ResourceRequest extends FormRequest
 {
@@ -19,7 +22,17 @@ class ResourceRequest extends FormRequest
         return [
             'category_id' => ['required', Rule::exists('marketplace_categories', 'id')->where('is_enabled', true)],
             'tags' => ['nullable', 'array', 'max:50'],
-            'tags.*' => ['integer', 'distinct', Rule::exists('marketplace_tags', 'id')->where('is_enabled', true)],
+            'tags.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('marketplace_tags', 'id')->where(function ($query) {
+                    $query->where('is_enabled', true)
+                        ->where(function ($scope) {
+                            $scope->whereNull('category_id')
+                                ->orWhere('category_id', $this->integer('category_id'));
+                        });
+                }),
+            ],
             'editor_upload_token' => ['required', 'uuid'],
             'name' => ['required', 'string', 'max:24', 'regex:/^[\pL\pN ]+$/u'],
             'version' => ['required', 'string', 'max:8', 'regex:/^[A-Za-z0-9._-]+$/'],
@@ -31,6 +44,7 @@ class ResourceRequest extends FormRequest
             'file' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'file' && ! $resource?->file_path), 'nullable', 'file', new AllowedResourceExtension($allowedExtensions), 'max:'.((int) setting('marketplace.max_file_size', 51200))],
             'external_url' => [Rule::requiredIf(fn () => $this->input('delivery_type') === 'external'), 'nullable', 'url:http,https', 'max:2000'],
             'is_paid' => ['sometimes', 'boolean'],
+            'is_pinned' => ['sometimes', 'boolean'],
             'price' => [
                 'required',
                 'integer',
@@ -50,12 +64,26 @@ class ResourceRequest extends FormRequest
         ]);
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if (! $this->user()?->can('marketplace.edit')) {
+                $category = Category::find($this->integer('category_id'));
+                if ($category && ! $category->canPublish($this->user())) $validator->errors()->add('category_id', trans('marketplace::messages.validation.category_publish_role'));
+                $forbiddenTag = Tag::query()->whereIn('id', (array) $this->input('tags', []))->get()->first(fn (Tag $tag) => ! $tag->canUse($this->user()));
+                if ($forbiddenTag) $validator->errors()->add('tags', trans('marketplace::messages.validation.tag_publish_role'));
+            }
+            if ($this->boolean('is_pinned') && ! $this->user()?->can('marketplace.pin')) $validator->errors()->add('is_pinned', trans('marketplace::messages.validation.pin_permission'));
+        });
+    }
+
     public function messages(): array
     {
         return [
             'name.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
             'summary.regex' => trans('marketplace::messages.validation.alpha_numeric_spaces'),
             'version.regex' => trans('marketplace::messages.validation.version_format'),
+            'tags.*.exists' => trans('marketplace::messages.validation.tag_category'),
         ];
     }
 

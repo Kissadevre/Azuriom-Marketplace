@@ -35,8 +35,9 @@
 @endpush
 
 @section('content')
-@php($updatesTabActive = $errors->hasAny(['version', 'description', 'file', 'external_url']))
+@php($updatesTabActive = request()->query('tab') === 'updates' || $errors->hasAny(['version', 'description', 'file', 'external_url']))
 <div class="container content">
+    @include('marketplace::_breadcrumbs', ['items' => [['label' => $resource->category->name, 'url' => route('marketplace.categories.show', $resource->category)], ['label' => $resource->name]]])
     <div class="row g-4">
         <main class="col-lg-8">
             <header class="marketplace-resource-header d-flex flex-column flex-md-row justify-content-between gap-4 mb-4">
@@ -94,14 +95,15 @@
             @endif
             @if($resource->isPaused())<div class="alert alert-warning"><i class="bi bi-pause-circle me-2"></i>@lang('marketplace::messages.pause_notice')</div>@endif
 
-            <ul class="nav marketplace-tabs mb-4" role="tablist">
-                <li class="nav-item" role="presentation"><button class="nav-link @if(! $updatesTabActive) active @endif" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-pane" type="button" role="tab" aria-controls="general-pane" aria-selected="{{ $updatesTabActive ? 'false' : 'true' }}">@lang('marketplace::messages.tabs.general')</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link @if($updatesTabActive) active @endif" id="updates-tab" data-bs-toggle="tab" data-bs-target="#updates-pane" type="button" role="tab" aria-controls="updates-pane" aria-selected="{{ $updatesTabActive ? 'true' : 'false' }}">@lang('marketplace::messages.tabs.updates') <span class="badge bg-secondary ms-1">{{ $resource->updates->count() }}</span></button></li>
+            <ul class="nav marketplace-tabs mb-4" aria-label="@lang('marketplace::messages.tabs.navigation')">
+                <li class="nav-item"><a class="nav-link @if(! $updatesTabActive) active @endif" href="{{ route('marketplace.resources.show', $resource) }}" @if(! $updatesTabActive) aria-current="page" @endif>@lang('marketplace::messages.tabs.general')</a></li>
+                <li class="nav-item"><a class="nav-link @if($updatesTabActive) active @endif" href="{{ route('marketplace.resources.show', ['resource' => $resource, 'tab' => 'updates']) }}" @if($updatesTabActive) aria-current="page" @endif>@lang('marketplace::messages.tabs.updates') <span class="badge bg-secondary ms-1">{{ $resource->updates->count() }}</span></a></li>
             </ul>
 
-            <div class="tab-content">
-                <div class="tab-pane fade @if(! $updatesTabActive) show active @endif" id="general-pane" role="tabpanel" aria-labelledby="general-tab" tabindex="0">
-                    <div class="card marketplace-content-card mb-4"><div class="card-body p-4 p-lg-5"><p class="lead fw-medium border-bottom pb-4 mb-4">{{ $resource->summary }}</p><div class="marketplace-resource-content">{!! $resource->description !!}</div></div></div>
+            <div>
+                @if(! $updatesTabActive)
+                <div id="general-pane">
+                    <div class="card marketplace-content-card mb-4"><div class="card-body p-4 p-lg-5"><p class="lead fw-medium border-bottom pb-4 mb-4">{{ $resource->summary }}</p><div class="marketplace-resource-content markdown-body">{!! $resource->parseMarkdown('description') !!}</div></div></div>
 
                     <div class="d-flex align-items-center gap-2 mb-3"><span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary" style="width: 2.5rem; height: 2.5rem;"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><h2 class="h4 mb-0">@lang('marketplace::messages.comments')</h2><span class="badge bg-secondary rounded-pill">{{ $resource->comments->count() }}</span></div>
                     @if(setting('marketplace.pause_comments', false))
@@ -109,7 +111,7 @@
                     @else
                     @auth
                         @if(! $resource->isPaused() && $resource->canInteract(auth()->user()) && $resource->status === 'published')
-                            <form method="POST" action="{{ route('marketplace.comments.store', $resource) }}" class="card marketplace-comment-card mb-4" id="marketplace-comment-form">@csrf<div class="card-body"><textarea id="marketplaceCommentInput" name="content" class="marketplace-comment-input form-control" rows="1" maxlength="150" required placeholder="@lang('marketplace::messages.comment')" aria-describedby="marketplaceCommentCounter">{{ old('content') }}</textarea><div class="mt-3">@include('marketplace::resources._captcha', ['formId' => 'marketplace-comment-form'])</div><div class="d-flex justify-content-between align-items-center gap-3 mt-2"><small id="marketplaceCommentCounter" class="text-muted"><span>0</span>/150</small><button class="btn btn-primary px-4"><i class="bi bi-send me-1" aria-hidden="true"></i>@lang('marketplace::messages.comment')</button></div></div></form>
+                            <form method="POST" action="{{ route('marketplace.comments.store', $resource) }}" class="card marketplace-comment-card mb-4" id="captcha-form">@csrf<div class="card-body"><textarea id="marketplaceCommentInput" name="content" class="marketplace-comment-input form-control" rows="1" maxlength="150" required placeholder="@lang('marketplace::messages.comment')" aria-describedby="marketplaceCommentCounter">{{ old('content') }}</textarea><div class="mt-3">@include('elements.captcha', ['center' => true])</div><div class="d-flex justify-content-between align-items-center gap-3 mt-2"><small id="marketplaceCommentCounter" class="text-muted"><span>0</span>/150</small><button class="btn btn-primary px-4"><i class="bi bi-send me-1" aria-hidden="true"></i>@lang('marketplace::messages.comment')</button></div></div></form>
                         @elseif(! $resource->isPaused() && $resource->price > 0 && ! $resource->canInteract(auth()->user()) && ! $resource->isOwnedBy(auth()->user()) && $resource->status === 'published')
                             <div class="alert alert-info"><i class="bi bi-lock me-2" aria-hidden="true"></i>@lang('marketplace::messages.purchase_required_for_interactions')</div>
                         @endif
@@ -148,16 +150,17 @@
                     @endforelse
                 </div>
 
-                <div class="tab-pane fade @if($updatesTabActive) show active @endif" id="updates-pane" role="tabpanel" aria-labelledby="updates-tab" tabindex="0">
+                @else
+                <div id="updates-pane">
                     <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">@lang('marketplace::messages.updates.title')</h2>@if($resource->latestUpdate)<small class="text-muted">@lang('marketplace::messages.updates.last_update') {{ format_date($resource->latestUpdate->created_at, true) }}</small>@endif</div>
                     @auth
                         @if($resource->isOwnedBy(auth()->user()) || auth()->user()->can('marketplace.edit'))
-                            <div class="card marketplace-update-card border-primary mb-4"><div class="card-header py-3"><strong><i class="bi bi-cloud-arrow-up me-2" aria-hidden="true"></i>@lang('marketplace::messages.updates.publish')</strong></div><div class="card-body p-4"><form method="POST" action="{{ route('marketplace.resources.updates.store', $resource) }}" enctype="multipart/form-data" id="marketplace-update-form">@csrf
+                            <div class="card marketplace-update-card border-primary mb-4"><div class="card-header py-3"><strong><i class="bi bi-cloud-arrow-up me-2" aria-hidden="true"></i>@lang('marketplace::messages.updates.publish')</strong></div><div class="card-body p-4"><form method="POST" action="{{ route('marketplace.resources.updates.store', $resource) }}" enctype="multipart/form-data" id="captcha-form">@csrf
                                 <div class="mb-3"><label class="form-label" for="updateVersion">@lang('marketplace::messages.updates.version')</label><input id="updateVersion" name="version" class="form-control @error('version') is-invalid @enderror" value="{{ old('version') }}" maxlength="30" required placeholder="{{ $resource->version ? 'v'.$resource->version.' →' : '1.0.0' }}">@error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                                 <div class="mb-3"><label class="form-label" for="updateDescription">@lang('marketplace::messages.updates.changelog')</label><textarea id="updateDescription" name="description" class="form-control @error('description') is-invalid @enderror" rows="5" maxlength="10000" required>{{ old('description') }}</textarea>@error('description')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                                 @if($resource->delivery_type === 'file')<div class="mb-3"><label class="form-label" for="updateFile">@lang('marketplace::messages.updates.file')</label><input id="updateFile" type="file" name="file" class="form-control @error('file') is-invalid @enderror" accept="{{ app(\Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy::class)->acceptAttribute() }}" required>@error('file')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>
                                 @else<div class="mb-3"><label class="form-label" for="updateUrl">@lang('marketplace::messages.updates.url')</label><input id="updateUrl" type="url" name="external_url" class="form-control @error('external_url') is-invalid @enderror" value="{{ old('external_url', $resource->external_url) }}" required>@error('external_url')<span class="invalid-feedback">{{ $message }}</span>@enderror</div>@endif
-                                @include('marketplace::resources._captcha', ['formId' => 'marketplace-update-form'])
+                                @include('elements.captcha', ['center' => true])
                                 <button class="btn btn-primary"><i class="bi bi-cloud-arrow-up me-1"></i>@lang('marketplace::messages.updates.publish_action')</button>
                             </form></div></div>
                         @endif
@@ -169,6 +172,7 @@
                         <div class="marketplace-empty-comments text-muted"><i class="bi bi-clock-history fs-2 d-block mb-2" aria-hidden="true"></i>@lang('marketplace::messages.updates.empty')</div>
                     @endforelse
                 </div>
+                @endif
             </div>
         </main>
 
@@ -185,6 +189,11 @@
                         @if($resource->isPaused())<button class="btn btn-secondary w-100" disabled>@lang('marketplace::messages.paused')</button>
                         @elseif($resource->status === 'published' && $resource->price <= 0 && ! setting('marketplace.require_login_for_free_downloads', true))<a class="btn btn-success w-100" href="{{ route('marketplace.resources.download', $resource) }}">@lang('marketplace::messages.get_resource')</a>
                         @else<a href="{{ route('login') }}" class="btn btn-primary w-100">@lang('marketplace::messages.login_to_download')</a>@endif
+                    @endauth
+                    @auth
+                        @if($resource->status === 'published' && $resource->price <= 0 && ! $resource->isOwnedBy(auth()->user()))
+                            <form method="POST" action="{{ route('marketplace.resources.follow', $resource) }}" class="mt-3">@csrf<button class="btn {{ $isFollowing ? 'btn-primary' : 'btn-outline-primary' }} w-100"><i class="bi bi-bell{{ $isFollowing ? '-fill' : '' }} me-1" aria-hidden="true"></i>@lang($isFollowing ? 'marketplace::messages.follow.unfollow' : 'marketplace::messages.follow.follow')</button></form>
+                        @endif
                     @endauth
                 </div>
             </div>

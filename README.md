@@ -18,8 +18,8 @@ The plugin includes category access controls, content moderation, reporting tool
 - Publish downloadable files or link to an external website.
 - Use UUID-based resource URLs, preventing collisions between resources with the same name.
 - Add a title, version, summary, rich description, banner, category, delivery method, and coin price.
-- Rich descriptions powered by TinyMCE and sanitized on the server before storage.
-- Direct JPG, PNG, and WebP uploads from TinyMCE with private storage, server-side re-encoding, access control, and orphan cleanup.
+- Rich descriptions written with Azuriom's native Markdown editor and rendered through its CommonMark configuration.
+- Direct JPG, PNG, and WebP uploads from the Markdown editor with private storage, server-side re-encoding, access control, and orphan cleanup.
 - Banner images displayed in resource cards and on the resource page.
 - Separate resource information and version-history tabs.
 - Publish new versions with a changelog without editing the resource description.
@@ -29,12 +29,15 @@ The plugin includes category access controls, content moderation, reporting tool
 ### Discovery and categories
 
 - Administrator-managed categories with icons, descriptions, ordering, and enabled status.
-- Administrator-managed tags with descriptions, colors, ordering, and enabled status.
+- Administrator-managed global or category-specific tags with descriptions, colors, ordering, and enabled status.
 - Optional category access restrictions by Azuriom role.
+- Independent role restrictions for publishing in categories and assigning tags.
 - Optional many-to-many tag assignment when creating or editing resources.
 - Resource counters for each category.
 - Administrative resource lists per category.
 - Sorting by recently updated, download count, or highest rating.
+- Permission-controlled resource pinning that takes precedence over every listing sort.
+- Consistent public and administrative breadcrumb navigation across Marketplace pages.
 
 ### Free and paid resources
 
@@ -43,6 +46,10 @@ The plugin includes category access controls, content moderation, reporting tool
 - Paid resources are unlocked with the Azuriom site currency.
 - Purchases transfer coins from the buyer to the resource author inside a database transaction.
 - Purchasing a resource unlocks its download, comments, and ratings.
+- Purchased resources are collected in a personal library and receive new-version notifications.
+- Users can follow free resources to receive the same update notifications.
+- Paid-resource authors can generate hashed, limited-use gift codes containing one or more of their resources.
+- Gift-code redemptions grant zero-price purchase records without transferring coins.
 - Paid-resource comments and ratings require a purchase record; ownership or staff download bypasses do not grant interaction access.
 - Authorized staff can download paid resources without purchasing them.
 
@@ -102,7 +109,7 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Require an account for free-resource downloads or allow guests to download them.
 - Configure the maximum resource file size.
 - Configure the resource file extension whitelist.
-- Configure TinyMCE image size and per-resource image limits.
+- Configure Markdown editor image size and per-resource image limits.
 - Apply, review, and lift per-user action restrictions with an optional expiration date and internal reason.
 
 ## Permissions
@@ -140,13 +147,9 @@ The plugin registers and runs its database migration through Azuriom's plugin li
 
 ## Development database reset
 
-Marketplace currently keeps all schema creation in one migration file, in accordance with the project's plugin-development policy:
+Marketplace keeps each table in its own migration file under `database/migrations`. The filenames are ordered so referenced tables are created before their dependants and rolled back in reverse order.
 
-```text
-database/migrations/2026_08_24_000000_create_marketplace_tables.php
-```
-
-During development, if that migration has already run and the schema file was modified, roll back only the Marketplace migration and run migrations again from the Azuriom root:
+During development, if these migrations have already run and the schema files were modified, roll back only the Marketplace migrations and run them again from the Azuriom root:
 
 ```bash
 php artisan migrate:rollback --path=plugins/marketplace/database/migrations
@@ -158,8 +161,8 @@ Do not use this reset workflow on a production installation containing Marketpla
 ## Security notes
 
 - Resource files and banners are stored on the private `local` filesystem disk and served through authorized controller actions.
-- Resource descriptions are sanitized with an explicit HTML element, attribute, and URL-protocol allowlist.
-- Source-code edits are filtered by TinyMCE and re-sanitized on the server, including malformed markup, active-content elements, event attributes, unsafe targets, and obfuscated URL protocols.
+- Resource descriptions are stored as Markdown and rendered with Azuriom CommonMark.
+- Raw HTML is escaped and unsafe links are rejected by Azuriom's CommonMark configuration, preventing descriptions from injecting active HTML or scripts.
 - External destinations must use HTTP or HTTPS and require an explicit confirmation step.
 - File extension checks are enforced server-side for resource creation, editing, and version updates; the browser file filter is only an additional usability aid.
 - The permanent dangerous-extension denylist is enforced independently of the saved administrator whitelist.
@@ -177,7 +180,7 @@ Marketplace currently includes:
 
 ```text
 marketplace/
-├── database/migrations/   # Single Marketplace schema migration
+├── database/migrations/   # Ordered Marketplace schema migrations
 ├── resources/lang/        # English and Spanish translations
 ├── resources/views/       # Public and administration Blade views
 ├── routes/                # Public and administration routes
@@ -185,7 +188,7 @@ marketplace/
 ├── src/Models/            # Marketplace Eloquent models
 ├── src/Requests/          # Form request validation
 ├── src/Rules/             # Custom upload validation rules
-├── src/Support/           # HTML sanitization and file policies
+├── src/Support/           # Markdown image management and file policies
 ├── composer.json
 └── plugin.json
 ```

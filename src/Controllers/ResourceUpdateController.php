@@ -3,7 +3,10 @@
 namespace Azuriom\Plugin\Marketplace\Controllers;
 
 use Azuriom\Http\Controllers\Controller;
+use Azuriom\Models\User;
+use Azuriom\Notifications\AlertNotification;
 use Azuriom\Plugin\Marketplace\Models\Resource;
+use Azuriom\Plugin\Marketplace\Models\ResourceFollow;
 use Azuriom\Plugin\Marketplace\Requests\ResourceUpdateRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -56,8 +59,31 @@ class ResourceUpdateController extends Controller
         }
 
         $resource->refresh();
+        $recipientIds = $resource->purchases()->pluck('user_id')
+            ->merge(ResourceFollow::where('resource_id', $resource->id)->pluck('user_id'))
+            ->reject(fn ($userId) => (int) $userId === (int) $resource->user_id)
+            ->unique()
+            ->values();
 
-        return to_route('marketplace.resources.show', $resource)
+        User::query()->whereIn('id', $recipientIds)->chunkById(100, function ($users) use ($request, $resource) {
+            foreach ($users as $user) {
+                (new AlertNotification(trans('marketplace::messages.notifications.updated', [
+                    'resource' => $resource->name,
+                    'version' => $resource->version,
+                ])))
+                    ->from($request->user())
+                    ->link(route('marketplace.resources.show', [
+                        'resource' => $resource,
+                        'tab' => 'updates',
+                    ], false).'#updates-pane')
+                    ->send($user);
+            }
+        });
+
+        return to_route('marketplace.resources.show', [
+            'resource' => $resource,
+            'tab' => 'updates',
+        ])
             ->with('success', trans('marketplace::messages.updates.published'));
     }
 }

@@ -6,12 +6,13 @@ use Azuriom\Http\Controllers\Controller;
 use Azuriom\Models\Setting;
 use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
+use Azuriom\Plugin\Marketplace\Support\MarketplaceSettings;
 use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
-    public function edit(ResourceFilePolicy $filePolicy)
+    public function edit(ResourceFilePolicy $filePolicy, MarketplaceSettings $settings)
     {
         return view('marketplace::admin.settings', [
             'publishedResources' => Resource::published()->count(),
@@ -19,6 +20,8 @@ class SettingsController extends Controller
             'spentPoints' => (float) Purchase::sum('price'),
             'allowedExtensions' => implode(', ', $filePolicy->allowedExtensions()),
             'forbiddenExtensions' => ResourceFilePolicy::FORBIDDEN,
+            'showInUserMenu' => $settings->showInUserMenu(),
+            'userMenuIcon' => $settings->userMenuIcon(),
         ]);
     }
 
@@ -34,6 +37,8 @@ class SettingsController extends Controller
             'rate_limit_edit' => [...$wholeNumber, 'min:0', 'max:86400'],
             'rate_limit_update' => [...$wholeNumber, 'min:0', 'max:86400'],
             'rate_limit_comment' => [...$wholeNumber, 'min:0', 'max:86400'],
+            'user_menu_enabled' => ['required', 'boolean'],
+            'user_menu_icon' => ['bail', 'required', 'string', 'max:64', 'regex:/^bi-[a-z0-9]+(?:-[a-z0-9]+)*$/D'],
             'allowed_extensions' => [
                 'required',
                 'string',
@@ -67,6 +72,8 @@ class SettingsController extends Controller
             'marketplace.pause_submissions' => $request->boolean('pause_submissions'),
             'marketplace.pause_comments' => $request->boolean('pause_comments'),
             'marketplace.require_login_for_free_downloads' => $request->boolean('require_login_for_free_downloads'),
+            MarketplaceSettings::USER_MENU_ENABLED_KEY => (bool) $data['user_menu_enabled'],
+            MarketplaceSettings::USER_MENU_ICON_KEY => $data['user_menu_icon'],
             'marketplace.max_file_size' => $data['max_file_size'],
             'marketplace.max_editor_image_size' => $data['max_editor_image_size'],
             'marketplace.max_editor_images' => $data['max_editor_images'],

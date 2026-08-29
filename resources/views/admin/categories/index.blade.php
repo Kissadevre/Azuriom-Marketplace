@@ -3,6 +3,7 @@
 @section('title', trans('marketplace::admin.categories.title'))
 
 @section('content')
+@include('marketplace::_breadcrumbs', ['admin' => true, 'items' => [['label' => trans('marketplace::admin.categories.title')]]])
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
     <div class="d-flex align-items-center gap-3">
         <span class="d-flex align-items-center justify-content-center rounded bg-primary bg-opacity-10 text-primary fs-3" style="width: 3rem; height: 3rem;">
@@ -73,7 +74,7 @@
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('marketplace.admin.categories.edit', $category) }}" title="@lang('messages.actions.edit')" data-bs-toggle="tooltip">
                                 <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">@lang('messages.actions.edit')</span>
                             </a>
-                            @if($category->resources_count === 0)
+                            @if($category->resources_count === 0 && $category->tags_count === 0)
                                 <a class="btn btn-sm btn-outline-danger" href="{{ route('marketplace.admin.categories.destroy', $category) }}" title="@lang('messages.actions.delete')" data-bs-toggle="tooltip" data-confirm="delete">
                                     <i class="bi bi-trash" aria-hidden="true"></i><span class="visually-hidden">@lang('messages.actions.delete')</span>
                                 </a>

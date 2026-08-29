@@ -1,5 +1,5 @@
 @csrf
-<input type="hidden" id="editorUploadToken" name="editor_upload_token" value="{{ old('editor_upload_token', $editorUploadToken) }}">
+<input type="hidden" name="editor_upload_token" value="{{ old('editor_upload_token', $editorUploadToken) }}">
 @push('styles')
 <style>
     .marketplace-form-card { border-radius: 1rem; }
@@ -10,7 +10,6 @@
     .marketplace-tag-option:hover { border-color: rgba(var(--bs-primary-rgb), .45) !important; background: rgba(var(--bs-primary-rgb), .04); }
     .marketplace-banner-preview { width: 100%; aspect-ratio: 16 / 8.5; object-fit: cover; }
     .marketplace-summary-input { resize: none; }
-    .marketplace-editor-card .tox-tinymce { border-color: var(--bs-border-color); border-radius: .65rem; }
     @media (max-width: 991.98px) { .marketplace-form-sidebar { position: static; } }
 </style>
 @endpush
@@ -27,18 +26,19 @@
             <div class="card-body p-4">
                 <div class="mb-4"><label class="form-label fw-semibold">@lang('messages.fields.name')</label><input class="form-control form-control-lg @error('name') is-invalid @enderror" name="name" maxlength="24" pattern="[\p{L}\p{N} ]+" value="{{ old('name',$resource->name??'') }}" required data-character-counter="nameCounter">@error('name')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="nameCounter">0</span>/24</small></div></div>
                 <div class="mb-4"><label class="form-label fw-semibold">@lang('marketplace::messages.fields.summary')</label><textarea class="marketplace-summary-input form-control @error('summary') is-invalid @enderror" name="summary" rows="3" maxlength="150" required data-character-counter="summaryCounter">{{ old('summary',$resource->summary??'') }}</textarea>@error('summary')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="summaryCounter">0</span>/150</small></div></div>
-                <div><label class="form-label fw-semibold" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control html-editor" rows="14" name="description">{{ old('description',$resource->description??'') }}</textarea><small class="form-text text-muted d-block mt-2"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::messages.editor.help')</small></div>
+                <div><label class="form-label fw-semibold" for="descriptionInput">@lang('marketplace::messages.fields.description')</label><textarea id="descriptionInput" class="form-control markdown-editor @error('description') is-invalid @enderror" rows="14" maxlength="50000" name="description" aria-required="true">{{ old('description',$resource->description??'') }}</textarea>@error('description')<span class="invalid-feedback">{{ $message }}</span>@enderror<small class="form-text text-muted d-block mt-2"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::messages.editor.help')</small></div>
             </div>
         </div>
     </main>
 
     <aside class="col-lg-4">
         <div class="marketplace-form-sidebar d-grid gap-4">
+            @can('marketplace.pin')<div class="card marketplace-form-card border-primary"><div class="card-body"><div class="form-check form-switch"><input type="hidden" name="is_pinned" value="0"><input class="form-check-input" type="checkbox" role="switch" id="pinnedResource" name="is_pinned" value="1" @checked(old('is_pinned', isset($resource) && $resource->pinned_at !== null))><label class="form-check-label fw-semibold" for="pinnedResource"><i class="bi bi-pin-angle-fill me-1" aria-hidden="true"></i>@lang('marketplace::messages.pin.label')</label><small class="form-text text-muted d-block mt-1">@lang('marketplace::messages.pin.help')</small></div></div></div>@endcan
             <div class="card marketplace-form-card">
                 <div class="card-header"><strong><i class="bi bi-sliders me-2" aria-hidden="true"></i>@lang('marketplace::messages.fields.category')</strong></div>
                 <div class="card-body">
-                    <div class="mb-3"><label class="form-label">@lang('marketplace::messages.fields.category')</label><select name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
-                    <div><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control @error('version') is-invalid @enderror" name="version" maxlength="8" pattern="[A-Za-z0-9._-]+" value="{{ old('version',$resource->version??'') }}" required data-character-counter="versionCounter">@error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="versionCounter">0</span>/8</small></div></div>
+                    <div class="mb-3"><label class="form-label" for="resourceCategory">@lang('marketplace::messages.fields.category')</label><select id="resourceCategory" name="category_id" class="form-select" required>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$resource->category_id??null)==$category->id)>{{ $category->name }}</option>@endforeach</select></div>
+                    <div><label class="form-label">@lang('marketplace::messages.fields.version')</label><input class="form-control @error('version') is-invalid @enderror" name="version" maxlength="8" pattern="(?:[A-Za-z0-9._]|-)+" value="{{ old('version',$resource->version??'') }}" required data-character-counter="versionCounter">@error('version')<span class="invalid-feedback">{{ $message }}</span>@enderror<div class="text-end"><small class="text-muted"><span id="versionCounter">0</span>/8</small></div></div>
                 </div>
             </div>
 
@@ -47,7 +47,8 @@
                 <div class="card-body">
                     @php($selectedTags = array_map('intval', old('tags', isset($resource) ? $resource->tags->pluck('id')->all() : [])))
                     @if($tags->isNotEmpty())
-                        <div class="d-grid gap-2">@foreach($tags as $tag)<label class="marketplace-tag-option form-check border rounded-3 p-3 ps-5"><input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags, true))><span class="d-flex align-items-center gap-2"><span class="rounded-circle border flex-shrink-0" style="width: .875rem; height: .875rem; background-color: {{ $tag->color }};"></span><span>{{ $tag->name }}</span></span></label>@endforeach</div>
+                        <div class="d-grid gap-2">@foreach($tags as $tag)<label class="marketplace-tag-option form-check border rounded-3 p-3 ps-5" data-tag-option data-category-id="{{ $tag->category_id }}"><input class="form-check-input" type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags, true))><span class="d-flex align-items-center justify-content-between gap-2"><span class="d-flex align-items-center gap-2"><span class="rounded-circle border flex-shrink-0" style="width: .875rem; height: .875rem; background-color: {{ $tag->color }};"></span><span>{{ $tag->name }}</span></span><small class="text-muted">{{ $tag->category?->name ?? trans('marketplace::messages.tags.general') }}</small></span></label>@endforeach</div>
+                        <div id="marketplaceTagsEmpty" class="text-muted small" hidden>@lang('marketplace::messages.tags.empty_for_category')</div>
                     @else<div class="text-muted small">@lang('marketplace::messages.tags.empty')</div>@endif
                     @error('tags')<div class="text-danger small mt-1">{{ $message }}</div>@enderror @error('tags.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     <small class="form-text text-muted d-block mt-2">@lang('marketplace::messages.tags.optional_help')</small>
@@ -75,7 +76,7 @@
                 </div>
             </div>
 
-            @include('marketplace::resources._captcha', ['formId' => 'marketplace-resource-form'])
+            @include('elements.captcha', ['center' => true])
             <button class="btn btn-primary btn-lg w-100"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>@lang('messages.actions.save')</button>
         </div>
     </aside>
@@ -92,6 +93,29 @@
         const coinPriceGroup = document.getElementById('coinPriceGroup');
         const coinPrice = document.getElementById('coinPrice');
         const fileIsRequired = {{ isset($resource) && $resource->file_path ? 'false' : 'true' }};
+        const categoryInput = document.getElementById('resourceCategory');
+        const tagOptions = Array.from(document.querySelectorAll('[data-tag-option]'));
+        const tagsEmpty = document.getElementById('marketplaceTagsEmpty');
+
+        const updateTagOptions = () => {
+            let visibleTags = 0;
+
+            tagOptions.forEach((option) => {
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                const appliesToCategory = option.dataset.categoryId === ''
+                    || option.dataset.categoryId === categoryInput.value;
+
+                option.hidden = ! appliesToCategory;
+                checkbox.disabled = ! appliesToCategory;
+                if (! appliesToCategory) checkbox.checked = false;
+                if (appliesToCategory) visibleTags++;
+            });
+
+            if (tagsEmpty) tagsEmpty.hidden = visibleTags > 0;
+        };
+
+        categoryInput.addEventListener('change', updateTagOptions);
+        updateTagOptions();
 
         const updateDeliveryFields = () => {
             const usesFile = deliveryType.value === 'file';
@@ -142,4 +166,6 @@
     });
 </script>
 @endpush
-@include('marketplace::resources._editor')
+@include('elements.markdown-editor', [
+    'imagesUploadUrl' => route('marketplace.editor-images.store', ['draft_token' => $editorUploadToken]),
+])

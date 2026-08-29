@@ -10,7 +10,6 @@ use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
-use Azuriom\Plugin\Marketplace\Support\ResourceHtmlSanitizer;
 use Azuriom\Plugin\Marketplace\Support\ResourceEditorImageManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +24,8 @@ class ResourceController extends Controller
         abort_unless($this->canView($request, $resource), 403);
         $resource->load(['author', 'category', 'tags', 'comments.user', 'ratings', 'updates.author', 'latestUpdate']);
         $resource->comments->loadCount('likes');
+        $isFollowing = $request->user() !== null
+            && $resource->follows()->where('user_id', $request->user()->id)->exists();
         $likedCommentIds = $request->user()
             ? CommentLike::query()
                 ->where('user_id', $request->user()->id)
@@ -47,7 +48,7 @@ class ResourceController extends Controller
             ->limit(4)
             ->get();
 
-        return view('marketplace::resources.show', compact('resource', 'relatedResources', 'likedCommentIds'));
+        return view('marketplace::resources.show', compact('resource', 'relatedResources', 'likedCommentIds', 'isFollowing'));
     }
 
     public function banner(Request $request, Resource $resource)
@@ -74,9 +75,11 @@ class ResourceController extends Controller
             trans('marketplace::messages.submissions_paused')
         );
 
+        $categories = $this->categories($request);
+
         return view('marketplace::resources.create', [
-            'categories' => $this->categories($request),
-            'tags' => $this->tags(),
+            'categories' => $categories,
+            'tags' => $this->tags($categories, $request),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -90,7 +93,9 @@ class ResourceController extends Controller
         );
 
         abort_unless(
-            Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
+            $request->user()->can('marketplace.edit')
+            || (($category = Category::findOrFail($request->integer('category_id')))->canAccess($request->user())
+                && $category->canPublish($request->user())),
             403
         );
         $data = $this->payload($request);
@@ -110,11 +115,12 @@ class ResourceController extends Controller
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         $resource->load('tags');
+        $categories = $this->categories($request);
 
         return view('marketplace::resources.edit', [
             'resource' => $resource,
-            'categories' => $this->categories($request),
-            'tags' => $this->tags(),
+            'categories' => $categories,
+            'tags' => $this->tags($categories, $request),
             'editorUploadToken' => (string) Str::uuid(),
         ]);
     }
@@ -124,7 +130,8 @@ class ResourceController extends Controller
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         abort_unless(
             $request->user()->can('marketplace.edit')
-            || Category::findOrFail($request->integer('category_id'))->canAccess($request->user()),
+            || (($category = Category::findOrFail($request->integer('category_id')))->canAccess($request->user())
+                && $category->canPublish($request->user())),
             403
         );
         $data = $this->payload($request, $resource);
@@ -213,26 +220,27 @@ class ResourceController extends Controller
 
         return $request->user()->can('marketplace.edit')
             ? $categories
-            : $categories->filter->canAccess($request->user());
+            : $categories->filter(fn (Category $category) => $category->canAccess($request->user()) && $category->canPublish($request->user()));
     }
 
-    private function tags()
+    private function tags($categories, Request $request)
     {
-        return Tag::enabled()->orderBy('position')->orderBy('name')->get();
+        return Tag::enabled()
+            ->where(function ($query) use ($categories) {
+                $query->whereNull('category_id')->orWhereIn('category_id', $categories->modelKeys());
+            })
+            ->with('category')
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get()
+            ->when(! $request->user()->can('marketplace.edit'), fn ($tags) => $tags->filter(fn (Tag $tag) => $tag->canUse($request->user())));
     }
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
-        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid']);
-        $data['description'] = app(ResourceHtmlSanitizer::class)->sanitize($data['description']);
-
-        if ($data['description'] === '') {
-            throw ValidationException::withMessages([
-                'description' => trans('validation.required', [
-                    'attribute' => trans('marketplace::messages.fields.description'),
-                ]),
-            ]);
+        $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid', 'is_pinned']);
+        if ($request->user()->can('marketplace.pin')) {
+            $data['pinned_at'] = $request->boolean('is_pinned') ? ($resource?->pinned_at ?? now()) : null;
         }
-
         if ($request->hasFile('banner')) {
             $bannerPath = $request->file('banner')->store('marketplace/banners', 'local');
             if ($resource?->banner_path) {

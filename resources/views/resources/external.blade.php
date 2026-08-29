@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container content">
+    @include('marketplace::_breadcrumbs', ['items' => [['label' => $resource->name, 'url' => route('marketplace.resources.show', $resource)], ['label' => trans('marketplace::messages.external_warning.title')]]])
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="card border-warning">

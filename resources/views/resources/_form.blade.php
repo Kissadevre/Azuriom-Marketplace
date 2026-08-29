@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            @include('marketplace::resources._captcha', ['formId' => 'marketplace-resource-form'])
+            @include('elements.captcha', ['center' => true])
             <button class="btn btn-primary btn-lg w-100"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>@lang('messages.actions.save')</button>
         </div>
     </aside>

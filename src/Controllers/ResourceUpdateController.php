@@ -72,12 +72,18 @@ class ResourceUpdateController extends Controller
                     'version' => $resource->version,
                 ])))
                     ->from($request->user())
-                    ->link(route('marketplace.resources.show', $resource, false).'#updates-pane')
+                    ->link(route('marketplace.resources.show', [
+                        'resource' => $resource,
+                        'tab' => 'updates',
+                    ], false).'#updates-pane')
                     ->send($user);
             }
         });
 
-        return to_route('marketplace.resources.show', $resource)
+        return to_route('marketplace.resources.show', [
+            'resource' => $resource,
+            'tab' => 'updates',
+        ])
             ->with('success', trans('marketplace::messages.updates.published'));
     }
 }

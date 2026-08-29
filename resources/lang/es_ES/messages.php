@@ -24,6 +24,6 @@ return [
  'banner'=>['help'=>'Imagen opcional JPG, PNG o WebP. Máximo 5 MB y 4096 × 4096 píxeles.','remove'=>'Eliminar el banner actual'],
  'updates'=>['title'=>'Historial de versiones','publish'=>'Publicar una nueva versión','version'=>'Nueva versión','changelog'=>'Cambios de esta versión','file'=>'Archivo actualizado','url'=>'Enlace actualizado','publish_action'=>'Publicar actualización','published'=>'La nueva versión fue publicada correctamente.','updated'=>'Actualizado','last_update'=>'Última actualización:','by'=>'Publicado por :user','empty'=>'Este recurso todavía no tiene actualizaciones.'],
  'sort'=>['label'=>'Ordenar recursos','updated'=>'Actualizados recientemente','downloads'=>'Mayor número de descargas','rating'=>'Mejor valoración','apply'=>'Filtrar'],
- 'tabs'=>['general'=>'Información general','updates'=>'Versiones y changelog'],
+ 'tabs'=>['navigation'=>'Secciones del resource','general'=>'Información general','updates'=>'Versiones y changelog'],
  'author_resources'=>'Más recursos de :user',
 ];

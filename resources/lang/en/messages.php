@@ -24,6 +24,6 @@ return [
  'banner'=>['help'=>'Optional JPG, PNG or WebP image. Maximum 5 MB and 4096 × 4096 pixels.','remove'=>'Remove the current banner'],
  'updates'=>['title'=>'Version history','publish'=>'Publish a new version','version'=>'New version','changelog'=>'Changes in this version','file'=>'Updated file','url'=>'Updated link','publish_action'=>'Publish update','published'=>'The new version was published successfully.','updated'=>'Updated','last_update'=>'Last update:','by'=>'Published by :user','empty'=>'This resource does not have any updates yet.'],
  'sort'=>['label'=>'Sort resources','updated'=>'Recently updated','downloads'=>'Most downloaded','rating'=>'Highest rated','apply'=>'Filter'],
- 'tabs'=>['general'=>'General information','updates'=>'Versions and changelog'],
+ 'tabs'=>['navigation'=>'Resource sections','general'=>'General information','updates'=>'Versions and changelog'],
  'author_resources'=>'More resources by :user',
 ];

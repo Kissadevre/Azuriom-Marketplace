@@ -10,12 +10,13 @@ use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\Tag;
 use Azuriom\Plugin\Marketplace\Requests\ResourceRequest;
+use Azuriom\Plugin\Marketplace\Support\DiscordWebhookNotifier;
 use Azuriom\Plugin\Marketplace\Support\ResourceEditorImageManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ResourceController extends Controller
 {
@@ -84,8 +85,11 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function store(ResourceRequest $request, ResourceEditorImageManager $imageManager)
-    {
+    public function store(
+        ResourceRequest $request,
+        ResourceEditorImageManager $imageManager,
+        DiscordWebhookNotifier $discordNotifier
+    ) {
         abort_if(
             setting('marketplace.pause_submissions', false),
             403,
@@ -108,6 +112,10 @@ class ResourceController extends Controller
         $resource->tags()->sync($request->validated('tags', []));
         $imageManager->synchronize($resource, $request->user(), $draftToken, $data['description']);
 
+        if ($resource->status === 'published') {
+            $discordNotifier->notifyPublished($resource);
+        }
+
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
 
@@ -125,8 +133,12 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function update(ResourceRequest $request, Resource $resource, ResourceEditorImageManager $imageManager)
-    {
+    public function update(
+        ResourceRequest $request,
+        Resource $resource,
+        ResourceEditorImageManager $imageManager,
+        DiscordWebhookNotifier $discordNotifier
+    ) {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.edit'), 403);
         abort_unless(
             $request->user()->can('marketplace.edit')
@@ -134,16 +146,21 @@ class ResourceController extends Controller
                 && $category->canPublish($request->user())),
             403
         );
+        $wasNeverPublished = $resource->published_at === null;
         $data = $this->payload($request, $resource);
         $data['status'] = $this->requiresModeration($request) ? 'pending' : 'published';
         $data['published_at'] = $data['status'] === 'published'
             ? ($resource->published_at ?? now())
-            : null;
+            : $resource->published_at;
         $draftToken = $request->string('editor_upload_token')->toString();
         $imageManager->assertWithinLimit($resource, $request->user(), $draftToken, $data['description']);
         $resource->update($data);
         $resource->tags()->sync($request->validated('tags', []));
         $imageManager->synchronize($resource, $request->user(), $draftToken, $data['description']);
+
+        if ($wasNeverPublished && $resource->status === 'published') {
+            $discordNotifier->notifyPublished($resource);
+        }
 
         return to_route('marketplace.resources.show', $resource)->with('success', trans('marketplace::messages.saved'));
     }
@@ -152,25 +169,33 @@ class ResourceController extends Controller
     {
         abort_unless($resource->isOwnedBy($request->user()) || $request->user()->can('marketplace.delete'), 403);
         $resource->delete();
+
         return to_route('marketplace.index')->with('success', trans('messages.status.success'));
     }
 
     public function purchase(Request $request, Resource $resource)
     {
         abort_unless($resource->status === 'published' && ! $resource->isPaused() && $resource->category->canAccess($request->user()), 403);
-        if ($resource->isUnlockedBy($request->user())) return back()->with('success', trans('marketplace::messages.already_unlocked'));
+        if ($resource->isUnlockedBy($request->user())) {
+            return back()->with('success', trans('marketplace::messages.already_unlocked'));
+        }
         DB::transaction(function () use ($request, $resource) {
             $users = User::query()->whereIn('id', [$request->user()->id, $resource->user_id])
                 ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $buyer = $users->get($request->user()->id);
             $seller = $users->get($resource->user_id);
             abort_unless($buyer && $seller, 404);
-            if (Purchase::where('resource_id', $resource->id)->where('user_id', $buyer->id)->exists()) return;
-            if ($buyer->money < $resource->price) throw ValidationException::withMessages(['purchase' => trans('marketplace::messages.insufficient_money')]);
+            if (Purchase::where('resource_id', $resource->id)->where('user_id', $buyer->id)->exists()) {
+                return;
+            }
+            if ($buyer->money < $resource->price) {
+                throw ValidationException::withMessages(['purchase' => trans('marketplace::messages.insufficient_money')]);
+            }
             $buyer->removeMoney($resource->price);
             $seller->addMoney($resource->price);
-            Purchase::create(['resource_id'=>$resource->id,'user_id'=>$buyer->id,'price'=>$resource->price]);
+            Purchase::create(['resource_id' => $resource->id, 'user_id' => $buyer->id, 'price' => $resource->price]);
         });
+
         return back()->with('success', trans('marketplace::messages.purchased'));
     }
 
@@ -235,6 +260,7 @@ class ResourceController extends Controller
             ->get()
             ->when(! $request->user()->can('marketplace.edit'), fn ($tags) => $tags->filter(fn (Tag $tag) => $tag->canUse($request->user())));
     }
+
     private function payload(ResourceRequest $request, ?Resource $resource = null): array
     {
         $data = $request->safe()->except(['file', 'banner', 'remove_banner', 'tags', 'editor_upload_token', 'is_paid', 'is_pinned']);
@@ -253,13 +279,24 @@ class ResourceController extends Controller
         }
 
         if ($request->hasFile('file')) {
-            if ($resource?->file_path) Storage::disk('local')->delete($resource->file_path);
+            if ($resource?->file_path) {
+                Storage::disk('local')->delete($resource->file_path);
+            }
             $data['file_path'] = $request->file('file')->store('marketplace/resources', 'local');
         }
-        if ($data['delivery_type'] === 'file') $data['external_url'] = null;
-        else { if ($resource?->file_path) Storage::disk('local')->delete($resource->file_path); $data['file_path'] = null; }
+        if ($data['delivery_type'] === 'file') {
+            $data['external_url'] = null;
+        } else {
+            if ($resource?->file_path) {
+                Storage::disk('local')->delete($resource->file_path);
+            }
+
+            $data['file_path'] = null;
+        }
+
         return $data;
     }
+
     private function requiresModeration(Request $request): bool
     {
         return (bool) setting('marketplace.moderation', true)

@@ -10,6 +10,10 @@ class MarketplaceSettings
 
     public const DEFAULT_USER_MENU_ICON = 'bi-shop';
 
+    public const DISCORD_WEBHOOK_ENABLED_KEY = 'marketplace.discord_webhook_enabled';
+
+    public const DISCORD_WEBHOOK_URL_KEY = 'marketplace.discord_webhook_url';
+
     public function showInUserMenu(): bool
     {
         return filter_var(setting(self::USER_MENU_ENABLED_KEY, false), FILTER_VALIDATE_BOOL);
@@ -24,5 +28,17 @@ class MarketplaceSettings
         }
 
         return $icon;
+    }
+
+    public function discordWebhookEnabled(): bool
+    {
+        return filter_var(setting(self::DISCORD_WEBHOOK_ENABLED_KEY, false), FILTER_VALIDATE_BOOL);
+    }
+
+    public function discordWebhookUrl(): ?string
+    {
+        $url = setting(self::DISCORD_WEBHOOK_URL_KEY);
+
+        return is_string($url) && $url !== '' ? $url : null;
     }
 }

@@ -8,6 +8,7 @@ use Azuriom\Notifications\AlertNotification;
 use Azuriom\Plugin\Marketplace\Models\Resource;
 use Azuriom\Plugin\Marketplace\Models\ResourceFollow;
 use Azuriom\Plugin\Marketplace\Requests\ResourceUpdateRequest;
+use Azuriom\Plugin\Marketplace\Support\DiscordWebhookNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
@@ -17,8 +18,11 @@ class ResourceUpdateController extends Controller
     /**
      * @throws Throwable
      */
-    public function store(ResourceUpdateRequest $request, Resource $resource)
-    {
+    public function store(
+        ResourceUpdateRequest $request,
+        Resource $resource,
+        DiscordWebhookNotifier $discordNotifier
+    ) {
         $data = $request->validated();
         $newFilePath = null;
 
@@ -59,6 +63,8 @@ class ResourceUpdateController extends Controller
         }
 
         $resource->refresh();
+        $discordNotifier->notifyUpdated($resource);
+
         $recipientIds = $resource->purchases()->pluck('user_id')
             ->merge(ResourceFollow::where('resource_id', $resource->id)->pluck('user_id'))
             ->reject(fn ($userId) => (int) $userId === (int) $resource->user_id)

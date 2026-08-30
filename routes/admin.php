@@ -22,4 +22,6 @@ Route::get('restrictions', [RestrictionController::class, 'index'])->name('restr
 Route::post('restrictions', [RestrictionController::class, 'store'])->name('restrictions.store');
 Route::patch('restrictions/{restriction}/lift', [RestrictionController::class, 'lift'])->name('restrictions.lift');
 Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
+Route::post('settings/discord/test', [SettingsController::class, 'testDiscord'])
+    ->name('settings.discord.test');
 Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');

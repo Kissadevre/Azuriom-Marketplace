@@ -7,19 +7,27 @@ use Azuriom\Models\User;
 use Azuriom\Notifications\AlertNotification;
 use Azuriom\Plugin\Marketplace\Models\Comment;
 use Azuriom\Plugin\Marketplace\Models\Resource;
+use Azuriom\Plugin\Marketplace\Support\DiscordWebhookNotifier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ModerationController extends Controller
 {
-    public function approve(Resource $resource)
+    public function approve(Resource $resource, DiscordWebhookNotifier $discordNotifier)
     {
-        abort_unless($resource->status === 'pending', 409);
+        [$resource, $shouldNotifyDiscord] = DB::transaction(function () use ($resource) {
+            $lockedResource = Resource::query()->lockForUpdate()->findOrFail($resource->id);
+            abort_unless($lockedResource->status === 'pending', 409);
+            $shouldNotifyDiscord = $lockedResource->published_at === null;
 
-        $resource->update([
-            'status' => 'published',
-            'published_at' => now(),
-            'moderation_note' => null,
-        ]);
+            $lockedResource->update([
+                'status' => 'published',
+                'published_at' => $lockedResource->published_at ?? now(),
+                'moderation_note' => null,
+            ]);
+
+            return [$lockedResource->fresh(), $shouldNotifyDiscord];
+        });
 
         (new AlertNotification(trans('marketplace::messages.notifications.approved', [
             'resource' => $resource->name,
@@ -27,6 +35,10 @@ class ModerationController extends Controller
             ->level('success')
             ->link(route('marketplace.resources.show', $resource, false))
             ->send($resource->author);
+
+        if ($shouldNotifyDiscord) {
+            $discordNotifier->notifyPublished($resource);
+        }
 
         return back()->with('success', trans('marketplace::messages.moderation.approved'));
     }
@@ -41,7 +53,6 @@ class ModerationController extends Controller
 
         $resource->update([
             'status' => 'rejected',
-            'published_at' => null,
             ...$data,
         ]);
 

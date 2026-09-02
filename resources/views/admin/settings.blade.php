@@ -91,6 +91,40 @@
     </div>
 
     <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between gap-3">
+            <strong><i class="bi bi-discord me-2" aria-hidden="true"></i>@lang('marketplace::admin.settings.discord_webhook')</strong>
+            <span class="badge text-bg-secondary">@lang('marketplace::admin.settings.optional')</span>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between gap-4 mb-4">
+                <label for="discordWebhookEnabled" class="mb-0">
+                    <span class="d-block fw-semibold">@lang('marketplace::admin.settings.discord_webhook_enabled')</span>
+                    <small class="text-muted">@lang('marketplace::admin.settings.discord_webhook_enabled_help')</small>
+                </label>
+                <div class="form-check form-switch fs-4 mb-0">
+                    <input type="hidden" name="discord_webhook_enabled" value="0">
+                    <input class="form-check-input" type="checkbox" name="discord_webhook_enabled" value="1" id="discordWebhookEnabled" @checked(old('discord_webhook_enabled', $discordWebhookEnabled))>
+                </div>
+            </div>
+            <div>
+                <label class="form-label fw-semibold" for="discordWebhookUrl">@lang('marketplace::admin.settings.discord_webhook_url')</label>
+                <div class="input-group @error('discord_webhook_url') has-validation @enderror">
+                    <span class="input-group-text" aria-hidden="true"><i class="bi bi-link-45deg"></i></span>
+                    <input type="password" class="form-control font-monospace @error('discord_webhook_url') is-invalid @enderror" id="discordWebhookUrl" name="discord_webhook_url" value="{{ old('discord_webhook_url', $discordWebhookUrl) }}" maxlength="2048" placeholder="https://discord.com/api/webhooks/..." autocomplete="new-password" spellcheck="false" @required(old('discord_webhook_enabled', $discordWebhookEnabled))>
+                    @error('discord_webhook_url')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                </div>
+                <small class="form-text text-muted">@lang('marketplace::admin.settings.discord_webhook_url_help')</small>
+            </div>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4">
+                <small class="text-muted"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>@lang('marketplace::admin.settings.discord_webhook_security_help')</small>
+                <button type="submit" class="btn btn-outline-primary" form="discordWebhookTestForm" @disabled(! $discordWebhookUrl)>
+                    <i class="bi bi-send-check me-1" aria-hidden="true"></i>@lang('marketplace::admin.settings.discord_webhook_test')
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
         <div class="card-header"><strong><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>@lang('marketplace::admin.rate_limits.title')</strong></div>
         <div class="card-body">
             <p class="text-muted">@lang('marketplace::admin.rate_limits.help')</p>
@@ -159,12 +193,17 @@
 
     <div class="text-end"><button class="btn btn-primary px-4"><i class="bi bi-check-lg me-1" aria-hidden="true"></i>@lang('messages.actions.save')</button></div>
 </form>
+<form id="discordWebhookTestForm" method="POST" action="{{ route('marketplace.admin.settings.discord.test') }}">
+    @csrf
+</form>
 @endsection
 
 @push('footer-scripts')
 <script>
     const userMenuIconInput = document.getElementById('userMenuIcon');
     const userMenuIconPreview = document.getElementById('userMenuIconPreview');
+    const discordWebhookEnabled = document.getElementById('discordWebhookEnabled');
+    const discordWebhookUrl = document.getElementById('discordWebhookUrl');
 
     userMenuIconInput.addEventListener('input', () => {
         const icon = userMenuIconInput.value.trim().toLowerCase();
@@ -173,6 +212,13 @@
             ? `bi ${icon}`
             : 'bi bi-question-circle';
     });
+
+    const updateDiscordWebhookRequirement = () => {
+        discordWebhookUrl.required = discordWebhookEnabled.checked;
+    };
+
+    discordWebhookEnabled.addEventListener('change', updateDiscordWebhookRequirement);
+    updateDiscordWebhookRequirement();
 
     document.querySelectorAll('[data-integer-only]').forEach((input) => {
         input.addEventListener('keydown', (event) => {

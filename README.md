@@ -111,6 +111,8 @@ The settings dashboard shows published resources, resources awaiting approval, a
 - Configure the resource file extension whitelist.
 - Configure Markdown editor image size and per-resource image limits.
 - Apply, review, and lift per-user action restrictions with an optional expiration date and internal reason.
+- Optionally announce newly published resources and new resource versions through an official Discord webhook.
+- Send a test notification from the settings page before relying on the webhook.
 
 ## Permissions
 
@@ -168,6 +170,7 @@ Do not use this reset workflow on a production installation containing Marketpla
 - The permanent dangerous-extension denylist is enforced independently of the saved administrator whitelist.
 - Paid unlocks use database transactions and row locks to reduce double-purchase and balance-race risks.
 - User restrictions are enforced by route middleware before rate-limit and CAPTCHA validation.
+- Discord webhook URLs are restricted to official HTTPS Discord endpoints, mentions are disabled, and delivery failures are logged without rolling back Marketplace operations.
 
 ## Localization
 

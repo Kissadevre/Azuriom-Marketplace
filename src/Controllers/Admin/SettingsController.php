@@ -6,6 +6,8 @@ use Azuriom\Http\Controllers\Controller;
 use Azuriom\Models\Setting;
 use Azuriom\Plugin\Marketplace\Models\Purchase;
 use Azuriom\Plugin\Marketplace\Models\Resource;
+use Azuriom\Plugin\Marketplace\Rules\DiscordWebhookUrl;
+use Azuriom\Plugin\Marketplace\Support\DiscordWebhookNotifier;
 use Azuriom\Plugin\Marketplace\Support\MarketplaceSettings;
 use Azuriom\Plugin\Marketplace\Support\ResourceFilePolicy;
 use Illuminate\Http\Request;
@@ -22,6 +24,8 @@ class SettingsController extends Controller
             'forbiddenExtensions' => ResourceFilePolicy::FORBIDDEN,
             'showInUserMenu' => $settings->showInUserMenu(),
             'userMenuIcon' => $settings->userMenuIcon(),
+            'discordWebhookEnabled' => $settings->discordWebhookEnabled(),
+            'discordWebhookUrl' => $settings->discordWebhookUrl(),
         ]);
     }
 
@@ -39,6 +43,15 @@ class SettingsController extends Controller
             'rate_limit_comment' => [...$wholeNumber, 'min:0', 'max:86400'],
             'user_menu_enabled' => ['required', 'boolean'],
             'user_menu_icon' => ['bail', 'required', 'string', 'max:64', 'regex:/^bi-[a-z0-9]+(?:-[a-z0-9]+)*$/D'],
+            'discord_webhook_enabled' => ['required', 'boolean'],
+            'discord_webhook_url' => [
+                'bail',
+                'nullable',
+                'required_if:discord_webhook_enabled,1',
+                'string',
+                'max:2048',
+                new DiscordWebhookUrl(),
+            ],
             'allowed_extensions' => [
                 'required',
                 'string',
@@ -74,6 +87,8 @@ class SettingsController extends Controller
             'marketplace.require_login_for_free_downloads' => $request->boolean('require_login_for_free_downloads'),
             MarketplaceSettings::USER_MENU_ENABLED_KEY => (bool) $data['user_menu_enabled'],
             MarketplaceSettings::USER_MENU_ICON_KEY => $data['user_menu_icon'],
+            MarketplaceSettings::DISCORD_WEBHOOK_ENABLED_KEY => (bool) $data['discord_webhook_enabled'],
+            MarketplaceSettings::DISCORD_WEBHOOK_URL_KEY => $data['discord_webhook_url'] ?? '',
             'marketplace.max_file_size' => $data['max_file_size'],
             'marketplace.max_editor_image_size' => $data['max_editor_image_size'],
             'marketplace.max_editor_images' => $data['max_editor_images'],
@@ -85,5 +100,14 @@ class SettingsController extends Controller
         ]);
 
         return back()->with('success', trans('messages.status.success'));
+    }
+
+    public function testDiscord(DiscordWebhookNotifier $notifier)
+    {
+        if ($notifier->sendTest()) {
+            return back()->with('success', trans('marketplace::admin.settings.discord_webhook_test_success'));
+        }
+
+        return back()->with('error', trans('marketplace::admin.settings.discord_webhook_test_failed'));
     }
 }

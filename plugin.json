@@ -3,7 +3,7 @@
     "name": "Marketplace",
     "description": "Community marketplace for downloadable and external resources.",
     "version": "3.2.0",
-    "url": "https://zibuu.net/",
+    "url": "https://zibuu.net/projects/marketplace",
     "authors": ["Zibuu", "Kissadere"],
     "azuriom_api": "1.2.0",
     "providers": [

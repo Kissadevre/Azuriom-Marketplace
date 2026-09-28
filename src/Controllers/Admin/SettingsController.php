@@ -23,6 +23,7 @@ class SettingsController extends Controller
             'allowedExtensions' => implode(', ', $filePolicy->allowedExtensions()),
             'forbiddenExtensions' => ResourceFilePolicy::FORBIDDEN,
             'showInUserMenu' => $settings->showInUserMenu(),
+            'debugEnabled' => $settings->debugEnabled(),
             'userMenuIcon' => $settings->userMenuIcon(),
             'discordWebhookEnabled' => $settings->discordWebhookEnabled(),
             'discordWebhookUrl' => $settings->discordWebhookUrl(),
@@ -42,6 +43,7 @@ class SettingsController extends Controller
             'rate_limit_update' => [...$wholeNumber, 'min:0', 'max:86400'],
             'rate_limit_comment' => [...$wholeNumber, 'min:0', 'max:86400'],
             'user_menu_enabled' => ['required', 'boolean'],
+            'debug_enabled' => ['required', 'boolean'],
             'user_menu_icon' => ['bail', 'required', 'string', 'max:64', 'regex:/^bi-[a-z0-9]+(?:-[a-z0-9]+)*$/D'],
             'discord_webhook_enabled' => ['required', 'boolean'],
             'discord_webhook_url' => [
@@ -86,6 +88,7 @@ class SettingsController extends Controller
             'marketplace.pause_comments' => $request->boolean('pause_comments'),
             'marketplace.require_login_for_free_downloads' => $request->boolean('require_login_for_free_downloads'),
             MarketplaceSettings::USER_MENU_ENABLED_KEY => (bool) $data['user_menu_enabled'],
+            MarketplaceSettings::DEBUG_ENABLED_KEY => (bool) $data['debug_enabled'],
             MarketplaceSettings::USER_MENU_ICON_KEY => $data['user_menu_icon'],
             MarketplaceSettings::DISCORD_WEBHOOK_ENABLED_KEY => (bool) $data['discord_webhook_enabled'],
             MarketplaceSettings::DISCORD_WEBHOOK_URL_KEY => $data['discord_webhook_url'] ?? '',

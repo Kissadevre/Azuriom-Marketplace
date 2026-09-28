@@ -16,6 +16,11 @@ class DiscordWebhookTest extends TestCase
 {
     private const WEBHOOK_URL = 'https://discord.com/api/webhooks/123456789/test_token-value';
 
+    public function test_debug_logging_is_disabled_by_default(): void
+    {
+        $this->assertFalse(app(MarketplaceSettings::class)->debugEnabled());
+    }
+
     public function test_only_official_https_discord_webhook_urls_are_accepted(): void
     {
         $this->assertTrue(DiscordWebhookUrl::isValid(self::WEBHOOK_URL));

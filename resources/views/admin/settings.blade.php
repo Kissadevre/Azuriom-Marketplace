@@ -32,6 +32,16 @@
     @csrf
     @method('PUT')
     <div class="card mb-4">
+        <div class="card-header"><strong><i class="bi bi-bug text-warning me-2" aria-hidden="true"></i>@lang('marketplace::admin.debug.title')</strong></div>
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between gap-4">
+                <label for="debugEnabled" class="mb-0"><span class="d-block fw-semibold">@lang('marketplace::admin.debug.enabled')</span><small class="text-muted">@lang('marketplace::admin.debug.help')</small></label>
+                <div class="form-check form-switch fs-4"><input type="hidden" name="debug_enabled" value="0"><input class="form-check-input" type="checkbox" id="debugEnabled" name="debug_enabled" value="1" @checked(old('debug_enabled', $debugEnabled))></div>
+            </div>
+            <div class="form-text mt-3"><code>storage/logs/marketplace-debug-YYYY-MM-DD.log</code></div>
+        </div>
+    </div>
+    <div class="card mb-4">
         <div class="card-header"><strong>@lang('marketplace::admin.settings.general')</strong></div>
         <div class="card-body p-0">
             <div class="d-flex align-items-center justify-content-between gap-4 p-4 border-bottom">

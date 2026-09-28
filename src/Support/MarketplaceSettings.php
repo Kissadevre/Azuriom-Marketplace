@@ -4,6 +4,8 @@ namespace Azuriom\Plugin\Marketplace\Support;
 
 class MarketplaceSettings
 {
+    public const DEBUG_ENABLED_KEY = 'marketplace.debug_enabled';
+
     public const USER_MENU_ENABLED_KEY = 'marketplace.user_menu_enabled';
 
     public const USER_MENU_ICON_KEY = 'marketplace.user_menu_icon';
@@ -17,6 +19,11 @@ class MarketplaceSettings
     public function showInUserMenu(): bool
     {
         return filter_var(setting(self::USER_MENU_ENABLED_KEY, false), FILTER_VALIDATE_BOOL);
+    }
+
+    public function debugEnabled(): bool
+    {
+        return filter_var(setting(self::DEBUG_ENABLED_KEY, false), FILTER_VALIDATE_BOOL);
     }
 
     public function userMenuIcon(): string
